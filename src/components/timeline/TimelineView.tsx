@@ -14,14 +14,14 @@ export function TimelineView() {
 
   if (!trace) {
     return (
-      <div className="workspace-surface flex items-center justify-center p-6">
+      <div className="workspace-surface flex h-full min-h-0 items-center justify-center overflow-auto p-6">
         <div className="border border-zinc-800 bg-[#07080c]/90 px-4 py-3 font-mono text-xs text-zinc-500">{t.timelineEmpty}</div>
       </div>
     )
   }
 
   return (
-    <div className="workspace-surface min-h-full p-6">
+    <div className="workspace-surface scroll-panel h-full min-h-0 overflow-auto p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.timeline}</div>
         <div className="font-mono text-[11px] text-zinc-600">

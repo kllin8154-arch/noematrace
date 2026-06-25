@@ -2,6 +2,7 @@ import type { Finding } from '../../types/schema'
 import { getCopy, getRuleLabel, getSeverityLabel, localizeFinding } from '../../i18n'
 import { useTraceStore } from '../../store/trace-store'
 import { severityTone } from '../trace-utils'
+import { useState } from 'react'
 
 const severityRank: Record<Finding['severity'], number> = {
   critical: 0,
@@ -10,20 +11,37 @@ const severityRank: Record<Finding['severity'], number> = {
 }
 
 export function FailuresView() {
+  const [severityFilter, setSeverityFilter] = useState<Finding['severity'] | 'all'>('all')
   const findings = useTraceStore((state) => state.findings)
   const selectedStepId = useTraceStore((state) => state.selectedStepId)
   const selectStep = useTraceStore((state) => state.selectStep)
   const language = useTraceStore((state) => state.language)
   const t = getCopy(language)
-  const sortedFindings = [...findings].sort(
-    (left, right) => severityRank[left.severity] - severityRank[right.severity] || left.id.localeCompare(right.id),
-  )
+  const sortedFindings = [...findings]
+    .filter((finding) => severityFilter === 'all' || finding.severity === severityFilter)
+    .sort((left, right) => severityRank[left.severity] - severityRank[right.severity] || left.id.localeCompare(right.id))
 
   return (
-    <div className="workspace-surface min-h-full p-6">
+    <div className="workspace-surface scroll-panel h-full min-h-0 overflow-auto p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.findings}</div>
-        <div className="font-mono text-[11px] text-zinc-600">{sortedFindings.length}</div>
+        <div className="flex items-center gap-2">
+          {(['all', 'critical', 'warning', 'info'] as const).map((severity) => (
+            <button
+              className={`h-7 border px-2 font-mono text-[10px] ${
+                severityFilter === severity
+                  ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-200'
+                  : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+              }`}
+              key={severity}
+              onClick={() => setSeverityFilter(severity)}
+              type="button"
+            >
+              {severity === 'all' ? t.all : getSeverityLabel(severity, language)}
+            </button>
+          ))}
+          <div className="font-mono text-[11px] text-zinc-500">{sortedFindings.length}/{findings.length}</div>
+        </div>
       </div>
 
       {sortedFindings.length === 0 ? (

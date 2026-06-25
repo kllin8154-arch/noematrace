@@ -27,7 +27,7 @@ export function RightPanel() {
   }
 
   return (
-    <aside className="flex min-h-0 w-[24rem] shrink-0 flex-col border-l border-zinc-800 bg-[#0a0b10]">
+    <aside className="flex min-h-0 w-[18rem] shrink-0 flex-col border-l border-zinc-800 bg-[#0a0b10] lg:w-[20rem] 2xl:w-[24rem]">
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 px-4">
         <h2 className="font-mono text-[12px] uppercase tracking-normal text-zinc-400">{t.selectedStep}</h2>
         <button
@@ -38,7 +38,7 @@ export function RightPanel() {
           {t.collapse}
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div className="scroll-panel min-h-0 flex-1 overflow-auto">
         {selectedStep ? (
           <StepDetail step={selectedStep} />
         ) : (

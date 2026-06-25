@@ -1,13 +1,17 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { analyzeContextBudget } from '../../core/context-budget'
+import { calculateContextWasteScore } from '../../core/context-waste-score'
 import {
   getBudgetCategoryLabel,
   getContextRecommendationDescription,
   getContextRecommendationTitle,
+  getContextWasteLevelLabel,
   getCopy,
+  localizeContextWasteText,
+  localizeText,
 } from '../../i18n'
 import { useTraceStore } from '../../store/trace-store'
-import type { ContextBlock } from '../../types/schema'
+import type { ContextBlock, ContextWasteLevel, ContextWasteScore } from '../../types/schema'
 import { formatPercent, formatTokens } from '../trace-utils'
 import { BudgetEmptyState } from './BudgetEmptyState'
 
@@ -22,16 +26,26 @@ const categoryColors: Record<ContextBlock['category'], string> = {
   unknown: '#71717a',
 }
 
+const scoreTone: Record<ContextWasteLevel, { border: string; text: string; bg: string }> = {
+  good: { border: 'border-green-500/40', text: 'text-green-200', bg: 'bg-green-500/10' },
+  moderate: { border: 'border-yellow-500/40', text: 'text-yellow-200', bg: 'bg-yellow-500/10' },
+  wasteful: { border: 'border-orange-500/45', text: 'text-orange-200', bg: 'bg-orange-500/10' },
+  severe: { border: 'border-red-500/50', text: 'text-red-200', bg: 'bg-red-500/10' },
+  unavailable: { border: 'border-slate-600/45', text: 'text-slate-300', bg: 'bg-slate-500/10' },
+}
+
 export function ContextBudgetView() {
   const trace = useTraceStore((state) => state.trace)
   const language = useTraceStore((state) => state.language)
   const t = getCopy(language)
   const analysis = trace ? analyzeContextBudget(trace) : null
+  const wasteScore = trace ? calculateContextWasteScore(trace) : null
 
   if (!analysis) {
     return (
-      <div className="workspace-surface min-h-full p-6">
+      <div className="workspace-surface scroll-panel h-full min-h-0 overflow-auto p-6">
         <div className="mb-5 font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.budget}</div>
+        {wasteScore && <ContextWasteScoreCard score={wasteScore} />}
         <BudgetEmptyState />
       </div>
     )
@@ -46,13 +60,15 @@ export function ContextBudgetView() {
     }))
 
   return (
-    <div className="workspace-surface min-h-full p-6">
+    <div className="workspace-surface scroll-panel h-full min-h-0 overflow-auto p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.budget}</div>
         <div className="font-mono text-[11px] text-zinc-600">
           {t.llmCalls}: {analysis.llmCallCount}
         </div>
       </div>
+
+      {wasteScore && <ContextWasteScoreCard score={wasteScore} />}
 
       <div className="grid max-w-6xl grid-cols-[24rem_minmax(0,1fr)] gap-6">
         <section className="border border-zinc-900 bg-[#07080c]/90 p-4">
@@ -124,6 +140,41 @@ export function ContextBudgetView() {
         </section>
       </div>
     </div>
+  )
+}
+
+function ContextWasteScoreCard({ score }: { score: ContextWasteScore }) {
+  const language = useTraceStore((state) => state.language)
+  const t = getCopy(language)
+  const recommendation = score.recommendations[0] ?? score.summary
+
+  return (
+    <section className={`mb-6 border ${scoreTone[score.level].border} ${scoreTone[score.level].bg} bg-[#07080c]/90 p-4`}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="font-mono text-[11px] uppercase tracking-normal text-zinc-500">{t.contextWasteScore}</div>
+          <div className={`mt-2 font-mono text-2xl font-semibold ${scoreTone[score.level].text}`}>
+            {score.available ? `${score.score} / 100 · ${getContextWasteLevelLabel(score.level, language)}` : t.unavailable}
+          </div>
+          <div className="mt-1 font-mono text-[11px] text-zinc-500">{t.higherMoreWaste}</div>
+        </div>
+        <div className="max-w-xl text-sm leading-6 text-zinc-400">
+          {score.available && (
+            <div>
+              <span className="text-zinc-500">{t.analyzingLargestContextWindow}: </span>
+              <span className="text-zinc-200">
+                llm_call: {localizeText(score.analyzedStepTitle ?? '-', language)} ·{' '}
+                {formatTokens(score.analyzedContextTokens ?? 0)} tokens
+              </span>
+            </div>
+          )}
+          <div className="mt-2">
+            <span className="text-zinc-500">{score.available ? `${t.mainRecommendation}: ` : ''}</span>
+            <span className="text-zinc-300">{localizeContextWasteText(recommendation, language)}</span>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 

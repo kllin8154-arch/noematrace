@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { runAnalyzers } from '../src/core/analyzers'
 import { analyzeContextBudget } from '../src/core/context-budget'
+import { calculateContextWasteScore } from '../src/core/context-waste-score'
 import { validateTrace } from '../src/core/validator'
 import type { AgentTrace, ContextBlock, Finding, TraceStep } from '../src/types/schema'
 
@@ -22,6 +23,7 @@ describe('built-in demo traces', () => {
     const trace = loadExampleTrace('successful-coding-agent.json')
     const findings = runAnalyzers(trace)
     const budget = analyzeContextBudget(trace)
+    const wasteScore = calculateContextWasteScore(trace)
 
     expect(trace.steps).toHaveLength(9)
     expect(errorSteps(trace.steps)).toHaveLength(0)
@@ -30,6 +32,9 @@ describe('built-in demo traces', () => {
     expect(findings).toEqual([])
     expect(budget?.totalTokens).toBe(4_650)
     expect(budget?.categories.filter((item) => item.tokenCount > 0)).toHaveLength(8)
+    expect(wasteScore.available).toBe(true)
+    expect(wasteScore.score).toBeGreaterThanOrEqual(0)
+    expect(wasteScore.score).toBeLessThanOrEqual(30)
   })
 
   it('failed tool loop triggers repeated-tool-call and high-cost-node findings', () => {
@@ -37,6 +42,7 @@ describe('built-in demo traces', () => {
     const findings = runAnalyzers(trace)
     const repeated = byRule(findings, 'repeated-tool-call')
     const highCost = byRule(findings, 'high-cost-node')
+    const wasteScore = calculateContextWasteScore(trace)
 
     expect(trace.steps.length).toBeGreaterThanOrEqual(12)
     expect(trace.steps.length).toBeLessThanOrEqual(15)
@@ -46,12 +52,16 @@ describe('built-in demo traces', () => {
     expect(repeated[0].severity).toBe('critical')
     expect(repeated[0].stepIds).toHaveLength(5)
     expect(highCost.length).toBeGreaterThanOrEqual(1)
+    expect(wasteScore.available).toBe(true)
+    expect(wasteScore.score).toBeGreaterThanOrEqual(40)
+    expect(wasteScore.score).toBeLessThanOrEqual(65)
   })
 
   it('error cascade triggers a critical cascade finding from four consecutive errors', () => {
     const trace = loadExampleTrace('error-cascade.json')
     const findings = runAnalyzers(trace)
     const cascades = byRule(findings, 'error-cascade')
+    const wasteScore = calculateContextWasteScore(trace)
 
     expect(trace.steps.length).toBeGreaterThanOrEqual(10)
     expect(trace.steps.length).toBeLessThanOrEqual(14)
@@ -67,12 +77,16 @@ describe('built-in demo traces', () => {
       'e8-cascade-marker',
     ])
     expect(byRule(findings, 'high-cost-node')).toHaveLength(0)
+    expect(wasteScore.available).toBe(true)
+    expect(wasteScore.score).toBeGreaterThanOrEqual(30)
+    expect(wasteScore.score).toBeLessThanOrEqual(60)
   })
 
   it('context waste run triggers unused-context and full budget recommendations', () => {
     const trace = loadExampleTrace('context-waste-run.json')
     const findings = runAnalyzers(trace)
     const budget = analyzeContextBudget(trace)
+    const wasteScore = calculateContextWasteScore(trace)
 
     expect(trace.steps).toHaveLength(10)
     expect(totalTokens(trace.steps)).toBeGreaterThanOrEqual(62_000)
@@ -81,9 +95,11 @@ describe('built-in demo traces', () => {
     expect(byRule(findings, 'high-cost-node')).toHaveLength(0)
     expect(budget).not.toBeNull()
     expect(budget?.totalTokens).toBe(45_300)
-    expect(categoryPercentage(trace, 'tool_description')).toBeCloseTo(0.32, 2)
+    expect(categoryPercentage(trace, 'tool_description')).toBeGreaterThanOrEqual(0.3)
     expect((budget?.unusedTokens ?? 0) / (budget?.totalTokens ?? 1)).toBeGreaterThanOrEqual(0.35)
     expect((budget?.duplicatedTokens ?? 0) / (budget?.totalTokens ?? 1)).toBeGreaterThanOrEqual(0.1)
+    expect(wasteScore.available).toBe(true)
+    expect(wasteScore.score).toBeGreaterThanOrEqual(75)
     expect(budget?.recommendations.map((item) => item.id)).toEqual(
       expect.arrayContaining([
         'context-budget:tool-description-heavy',

@@ -110,3 +110,34 @@ export type Finding = {
   stepIds: string[]         // Which steps triggered this finding
   recommendation: string
 }
+
+export type ContextWasteLevel =
+  | 'good'
+  | 'moderate'
+  | 'wasteful'
+  | 'severe'
+  | 'unavailable'
+
+export type ContextWasteScore = {
+  available: boolean
+  score: number | null
+  level: ContextWasteLevel
+  analyzedStepId?: string
+  analyzedStepTitle?: string
+  analyzedContextTokens?: number
+  summary: string
+  recommendations: string[]
+  metrics: {
+    totalContextTokens: number
+    unusedTokens: number
+    duplicatedTokens: number
+    toolDescriptionTokens: number
+    conversationHistoryTokens: number
+    retrievedContextTokens: number
+    unusedRatio: number
+    duplicatedRatio: number
+    toolDescriptionRatio: number
+    historyRatio: number
+    maxStepTokenRatio: number
+  }
+}

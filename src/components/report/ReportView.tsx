@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { generateMarkdownReport } from '../../core/report'
 import { getCopy } from '../../i18n'
 import { useTraceStore } from '../../store/trace-store'
@@ -10,6 +10,16 @@ export function ReportView() {
   const language = useTraceStore((state) => state.language)
   const t = getCopy(language)
   const markdown = useMemo(() => (trace ? generateMarkdownReport(trace, findings, language) : ''), [findings, language, trace])
+
+  useEffect(() => {
+    if (!status) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => setStatus(null), 2500)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [status])
 
   async function copyReport() {
     if (!markdown) {
@@ -46,8 +56,8 @@ export function ReportView() {
   }
 
   return (
-    <div className="workspace-surface min-h-full p-6">
-      <div className="mb-5 flex items-center justify-between">
+    <div className="workspace-surface flex h-full min-h-0 flex-col overflow-hidden p-6">
+      <div className="mb-5 flex shrink-0 items-center justify-between">
         <div className="font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.report}</div>
         <div className="flex items-center gap-2">
           {status && <span className="font-mono text-[11px] text-cyan-300">{status}</span>}
@@ -71,7 +81,7 @@ export function ReportView() {
       </div>
 
       {markdown ? (
-        <pre className="max-w-5xl overflow-auto whitespace-pre-wrap border border-zinc-900 bg-[#07080c]/95 p-4 font-mono text-xs leading-6 text-zinc-300">
+        <pre className="scroll-panel min-h-0 flex-1 overflow-auto whitespace-pre-wrap border border-zinc-900 bg-[#07080c]/95 p-4 font-mono text-xs leading-6 text-zinc-300">
           {markdown}
         </pre>
       ) : (

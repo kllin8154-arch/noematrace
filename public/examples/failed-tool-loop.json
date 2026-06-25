@@ -328,6 +328,59 @@
       },
       "metadata": {
         "warning": "This step is intentionally expensive because it carries duplicated source snapshots."
+      },
+      "contextWindow": {
+        "totalTokens": 17000,
+        "blocks": [
+          {
+            "id": "l14-unused-scratchpad",
+            "category": "agent_scratchpad",
+            "tokenCount": 4250,
+            "used": false,
+            "source": "retry notes",
+            "contentPreview": "Repeated hypotheses from previous read_file attempts that were not used in the final answer."
+          },
+          {
+            "id": "l14-duplicate-picker-snippets",
+            "category": "retrieved_context",
+            "tokenCount": 2200,
+            "duplicated": true,
+            "source": "src/components/DateRangePicker.tsx",
+            "contentPreview": "Overlapping DateRangePicker snippets retrieved after repeated identical file reads."
+          },
+          {
+            "id": "l14-tool-catalog",
+            "category": "tool_description",
+            "tokenCount": 5200,
+            "used": true,
+            "source": "agent tool registry",
+            "contentPreview": "Full read_file, list_directory, shell, write_file and search tool descriptions loaded for a narrow debugging task."
+          },
+          {
+            "id": "l14-loop-history",
+            "category": "conversation_history",
+            "tokenCount": 4700,
+            "used": true,
+            "source": "conversation",
+            "contentPreview": "History of repeated attempts to inspect the same DateRangePicker file."
+          },
+          {
+            "id": "l14-system-policy",
+            "category": "system_prompt",
+            "tokenCount": 400,
+            "used": true,
+            "source": "system",
+            "contentPreview": "Follow project rules and keep edits scoped."
+          },
+          {
+            "id": "l14-user-request",
+            "category": "user_input",
+            "tokenCount": 250,
+            "used": true,
+            "source": "user",
+            "contentPreview": "Find why DateRangePicker closes immediately after selecting the start date."
+          }
+        ]
       }
     },
     {

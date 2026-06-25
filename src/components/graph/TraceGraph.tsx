@@ -7,6 +7,7 @@ import {
   MiniMap,
   Position,
   ReactFlow,
+  useReactFlow,
   type NodeMouseHandler,
   type NodeProps,
 } from '@xyflow/react'
@@ -30,6 +31,7 @@ const nodeTypes = {
 export function TraceGraph() {
   const [graph, setGraph] = useState<FlowGraph | null>(null)
   const [layoutError, setLayoutError] = useState<string | null>(null)
+  const [layouting, setLayouting] = useState(false)
   const trace = useTraceStore((state) => state.trace)
   const selectedStepId = useTraceStore((state) => state.selectedStepId)
   const selectStep = useTraceStore((state) => state.selectStep)
@@ -42,20 +44,25 @@ export function TraceGraph() {
     async function buildGraph() {
       if (!trace) {
         setGraph(null)
+        setLayouting(false)
         return
       }
 
       setLayoutError(null)
+      setGraph(null)
+      setLayouting(true)
       try {
         const nextGraph = await buildFlowGraph(trace)
 
         if (!cancelled) {
           setGraph(nextGraph)
+          setLayouting(false)
         }
       } catch (error) {
         if (!cancelled) {
           const message = error instanceof Error ? error.message : String(error)
           setLayoutError(message)
+          setLayouting(false)
         }
       }
     }
@@ -110,8 +117,16 @@ export function TraceGraph() {
     )
   }
 
+  if (layouting || !graph) {
+    return (
+      <div className="workspace-surface flex items-center justify-center">
+        <div className="border border-zinc-800 bg-[#07080c]/90 px-4 py-3 font-mono text-xs text-zinc-400">{t.graphLayoutLoading}</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="workspace-surface h-[calc(100vh-88px)] min-h-[720px] w-full">
+    <div className="workspace-surface h-full min-h-0 w-full">
       <div className="absolute left-6 top-5 z-10 font-mono text-[11px] uppercase tracking-normal text-zinc-600">{t.graph}</div>
       <ReactFlow<FlowNode, FlowEdge>
         colorMode="dark"
@@ -130,6 +145,7 @@ export function TraceGraph() {
         proOptions={{ hideAttribution: true }}
         style={{ height: '100%', width: '100%' }}
       >
+        <SelectionViewportSync nodes={nodes} selectedStepId={selectedStepId} />
         <Background color="#27272a" gap={32} variant={BackgroundVariant.Lines} />
         <Controls position="bottom-left" showInteractive={false} />
         <MiniMap<FlowNode>
@@ -146,6 +162,29 @@ export function TraceGraph() {
   )
 }
 
+function SelectionViewportSync({ nodes, selectedStepId }: { nodes: FlowNode[]; selectedStepId: string | null }) {
+  const reactFlow = useReactFlow<FlowNode, FlowEdge>()
+
+  useEffect(() => {
+    if (!selectedStepId || !reactFlow.viewportInitialized) {
+      return
+    }
+
+    const node = nodes.find((item) => item.id === selectedStepId)
+
+    if (!node) {
+      return
+    }
+
+    void reactFlow.setCenter(node.position.x + 140, node.position.y + 48, {
+      duration: 220,
+      zoom: Math.max(0.65, Math.min(reactFlow.getZoom(), 1)),
+    })
+  }, [nodes, reactFlow, selectedStepId])
+
+  return null
+}
+
 function TraceStepNode({ data, selected }: NodeProps<FlowNode>) {
   const language = useTraceStore((state) => state.language)
   const t = getCopy(language)
@@ -158,6 +197,7 @@ function TraceStepNode({ data, selected }: NodeProps<FlowNode>) {
   return (
     <div
       className={`relative w-[280px] border ${tone.border} ${tone.bg} ${selectedClass} ${errorClass} bg-[#0b0d12]/95 p-3 transition`}
+      title={localizeText(step.title, language)}
     >
       <Handle className="!h-2 !w-2 !border-zinc-950 !bg-zinc-400" position={Position.Top} type="target" />
       <div className="flex items-start justify-between gap-3">

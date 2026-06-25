@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import hljs from 'highlight.js'
 import { getCopy, getStatusLabel, getStepTypeLabel, localizeText, localizeValue } from '../../i18n'
 import { useTraceStore } from '../../store/trace-store'
@@ -46,20 +47,24 @@ export function StepDetail({ step }: { step: TraceStep }) {
             value={localizeValue(step.tool.arguments, language)}
           />
         )}
-        <JsonBlock label={t.input} noData={t.noData} value={localizeValue(step.input ?? null, language)} />
-        <JsonBlock label={t.output} noData={t.noData} value={localizeValue(step.output ?? null, language)} />
-        <JsonBlock label={t.error} noData={t.noData} value={localizeValue(step.error ?? null, language)} />
-        <JsonBlock
-          label={language === 'zh' ? '上下文窗口' : 'contextWindow'}
-          noData={t.noData}
-          value={localizeValue(step.contextWindow ?? null, language)}
-        />
-        <details className="px-4 py-3">
-          <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-normal text-zinc-600">{t.metadata}</summary>
-          <div className="mt-2">
-            <HighlightedCode code={toDisplayCode(localizeValue(step.metadata ?? null, language), t.noData)} />
-          </div>
-        </details>
+        {step.input !== undefined && <JsonBlock label={t.input} noData={t.noData} value={localizeValue(step.input, language)} />}
+        {step.output !== undefined && <JsonBlock label={t.output} noData={t.noData} value={localizeValue(step.output, language)} />}
+        {step.error !== undefined && <JsonBlock label={t.error} noData={t.noData} value={localizeValue(step.error, language)} />}
+        {step.contextWindow !== undefined && (
+          <JsonBlock
+            label={language === 'zh' ? '上下文窗口' : 'contextWindow'}
+            noData={t.noData}
+            value={localizeValue(step.contextWindow, language)}
+          />
+        )}
+        {step.metadata !== undefined && (
+          <details className="px-4 py-3">
+            <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-normal text-zinc-500">{t.metadata}</summary>
+            <div className="mt-2">
+              <HighlightedCode code={toDisplayCode(localizeValue(step.metadata, language), t.noData)} />
+            </div>
+          </details>
+        )}
       </div>
     </div>
   )
@@ -75,11 +80,34 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function JsonBlock({ label, noData, value }: { label: string; noData: string; value: unknown }) {
+  const language = useTraceStore((state) => state.language)
+  const t = getCopy(language)
+  const [copied, setCopied] = useState(false)
   const code = toDisplayCode(value, noData)
+
+  async function copyBlock() {
+    const ok = await copyText(code)
+
+    if (!ok) {
+      return
+    }
+
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1800)
+  }
 
   return (
     <div className="px-4 py-3">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-normal text-zinc-600">{label}</div>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="font-mono text-[10px] uppercase tracking-normal text-zinc-500">{label}</div>
+        <button
+          className="h-6 border border-zinc-700 px-2 font-mono text-[10px] text-zinc-300 hover:border-cyan-500/60 hover:text-cyan-200"
+          onClick={() => void copyBlock()}
+          type="button"
+        >
+          {copied ? t.copied : t.copyBlock}
+        </button>
+      </div>
       <HighlightedCode code={code} />
     </div>
   )
@@ -89,10 +117,39 @@ function HighlightedCode({ code }: { code: string }) {
   const html = highlightJson(code)
 
   return (
-    <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words border border-zinc-900 bg-[#07080c] p-3 font-mono text-[11px] leading-5 text-zinc-300">
+    <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border border-zinc-900 bg-[#07080c] p-3 font-mono text-[11px] leading-5 text-zinc-300">
       <code className="hljs language-json" dangerouslySetInnerHTML={{ __html: html }} />
     </pre>
   )
+}
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return copyTextFallback(text)
+  }
+}
+
+function copyTextFallback(text: string): boolean {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-9999px'
+  textarea.style.top = '0'
+
+  document.body.appendChild(textarea)
+  textarea.select()
+
+  try {
+    return document.execCommand('copy')
+  } catch {
+    return false
+  } finally {
+    document.body.removeChild(textarea)
+  }
 }
 
 function toDisplayCode(value: unknown, noData: string): string {

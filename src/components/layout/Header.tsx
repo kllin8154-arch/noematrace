@@ -8,12 +8,11 @@ export function Header() {
   const findings = useTraceStore((state) => state.findings)
   const language = useTraceStore((state) => state.language)
   const toggleLanguage = useTraceStore((state) => state.toggleLanguage)
-  const setError = useTraceStore((state) => state.setError)
+  const reset = useTraceStore((state) => state.reset)
   const t = getCopy(language)
 
   function downloadReport() {
     if (!trace) {
-      setError(t.noReport)
       return
     }
 
@@ -50,8 +49,19 @@ export function Header() {
         </button>
         <TraceUploader />
         <button
-          className="h-7 border border-cyan-500/50 bg-cyan-500/10 px-3 font-mono text-[11px] text-cyan-200 hover:bg-cyan-500/15"
+          className="h-7 border border-zinc-700 bg-zinc-900 px-3 font-mono text-[11px] text-zinc-300 hover:border-cyan-500/60 hover:text-cyan-200 disabled:cursor-not-allowed disabled:text-zinc-600"
+          disabled={!trace}
+          onClick={reset}
+          title={trace ? t.clearTrace : t.noTraceLoaded}
+          type="button"
+        >
+          {t.clearTrace}
+        </button>
+        <button
+          className="h-7 border border-cyan-500/50 bg-cyan-500/10 px-3 font-mono text-[11px] text-cyan-200 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-600"
+          disabled={!trace}
           onClick={downloadReport}
+          title={trace ? t.exportReport : t.exportDisabled}
           type="button"
         >
           {t.exportReport}

@@ -8,11 +8,12 @@ interface TraceState {
   trace: AgentTrace | null
   findings: Finding[]
   selectedStepId: string | null
+  sourceName: string | null
   activeTab: ViewTab
   language: Language
   error: string | null
 
-  loadTrace: (trace: AgentTrace) => void
+  loadTrace: (trace: AgentTrace, sourceName?: string) => void
   setFindings: (findings: Finding[]) => void
   selectStep: (stepId: string | null) => void
   setActiveTab: (tab: ViewTab) => void
@@ -26,16 +27,17 @@ export const useTraceStore = create<TraceState>((set) => ({
   trace: null,
   findings: [],
   selectedStepId: null,
+  sourceName: null,
   activeTab: 'graph',
   language: 'zh',
   error: null,
 
-  loadTrace: (trace) => set({ trace, error: null, selectedStepId: null }),
+  loadTrace: (trace, sourceName) => set({ trace, sourceName: sourceName ?? null, error: null, selectedStepId: null }),
   setFindings: (findings) => set({ findings }),
   selectStep: (stepId) => set({ selectedStepId: stepId }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setLanguage: (language) => set({ language }),
   toggleLanguage: () => set((state) => ({ language: state.language === 'en' ? 'zh' : 'en' })),
   setError: (error) => set({ error }),
-  reset: () => set({ trace: null, findings: [], selectedStepId: null, activeTab: 'graph', error: null }),
+  reset: () => set({ trace: null, findings: [], selectedStepId: null, sourceName: null, activeTab: 'graph', error: null }),
 }))

@@ -67,6 +67,25 @@ export const copy = {
     severity: 'Severity',
     experimental: 'experimental',
     defaultExampleLoadFailed: 'Failed to load default example',
+    exportDisabled: 'Load a trace before exporting a report',
+    clearTrace: 'Clear',
+    dismiss: 'Dismiss',
+    dragOverlayTitle: 'Drop JSON to load trace',
+    dragOverlayBody: 'Release the file anywhere in this window.',
+    searchSteps: 'Search steps',
+    noMatchingSteps: 'No matching steps',
+    graphLayoutLoading: 'Computing graph layout...',
+    copyBlock: 'Copy block',
+    keyboardHint: 'Shortcuts: ↑↓ steps · 1-5 tabs · Esc dismisses alerts',
+    all: 'All',
+    contextWaste: 'Context Waste',
+    contextWasteScore: 'Context Waste Score',
+    higherMoreWaste: '(higher = more waste)',
+    unavailable: 'Unavailable',
+    needsAnnotatedContextWindow: 'Needs annotated contextWindow',
+    analyzingLargestContextWindow: 'Analyzing largest context window',
+    mainRecommendation: 'Main recommendation',
+    efficientContext: 'Context usage looks efficient.',
   },
   zh: {
     appSubtitle: '执行回放 / 上下文预算',
@@ -132,6 +151,25 @@ export const copy = {
     severity: '严重级别',
     experimental: '实验性',
     defaultExampleLoadFailed: '默认示例加载失败',
+    exportDisabled: '加载 trace 后才能导出报告',
+    clearTrace: '清空',
+    dismiss: '关闭',
+    dragOverlayTitle: '松手以加载 trace JSON',
+    dragOverlayBody: '可以把文件拖到窗口任意位置。',
+    searchSteps: '搜索步骤',
+    noMatchingSteps: '没有匹配步骤',
+    graphLayoutLoading: '正在计算图谱布局...',
+    copyBlock: '复制块',
+    keyboardHint: '快捷键：↑↓ 切步骤 · 1-5 切视图 · Esc 关闭提示',
+    all: '全部',
+    contextWaste: '上下文浪费',
+    contextWasteScore: '上下文浪费分',
+    higherMoreWaste: '（分数越高表示浪费越严重）',
+    unavailable: '不可用',
+    needsAnnotatedContextWindow: '需要标注 contextWindow',
+    analyzingLargestContextWindow: '正在分析最大的上下文窗口',
+    mainRecommendation: '主要建议',
+    efficientContext: '上下文使用看起来比较高效。',
   },
 } as const
 
@@ -415,6 +453,52 @@ export function getContextRecommendationDescription(id: string, description: str
   }
 
   return contextRecommendationMap[id]?.description ?? description
+}
+
+export function getContextWasteLevelLabel(level: string, language: Language): string {
+  if (language === 'en') {
+    return level
+  }
+
+  const labels: Record<string, string> = {
+    good: '良好',
+    moderate: '中等',
+    wasteful: '浪费较高',
+    severe: '严重浪费',
+    unavailable: '不可用',
+  }
+
+  return labels[level] ?? level
+}
+
+export function localizeContextWasteText(text: string, language: Language): string {
+  if (language === 'en') {
+    return text
+  }
+
+  const textMap: Record<string, string> = {
+    'Context usage looks efficient.': '上下文使用看起来比较高效。',
+    'Some context waste detected. Review unused or duplicated blocks.':
+      '检测到一些上下文浪费，请检查未使用或重复的上下文块。',
+    'Significant context waste. Optimize tool descriptions, retrieval, or history.':
+      '上下文浪费较明显，请优化工具描述、检索内容或对话历史。',
+    'Severe context waste. This run likely suffers from poor context engineering.':
+      '上下文浪费严重，这次运行很可能受到了较差上下文工程的影响。',
+    'Context Waste Score requires annotated contextWindow blocks on llm_call steps.':
+      '上下文浪费分需要 llm_call 步骤中带有已标注的 contextWindow blocks。',
+    'Unused context is high. Reduce irrelevant retrieved chunks or avoid loading unused tool descriptions.':
+      '未使用上下文偏高。请减少无关检索片段，或避免加载不会用到的工具描述。',
+    'Duplicate context detected. Deduplicate retrieved chunks before injecting them into the context window.':
+      '检测到重复上下文。请在注入上下文窗口前对检索片段去重。',
+    'Tool descriptions consume a large portion of the context window. Consider lazy-loading tools based on task intent.':
+      '工具描述占用了较大的上下文窗口。可以根据任务意图延迟加载工具。',
+    'Conversation history is large. Consider summarizing older turns or keeping only task-relevant messages.':
+      '对话历史偏大。可以总结较早轮次，或只保留与任务相关的消息。',
+    'A single step consumed a large share of total tokens. Split the task or reduce context for that LLM call.':
+      '单个步骤消耗了过高比例的 Token。请拆分任务，或减少该模型调用的上下文。',
+  }
+
+  return textMap[text] ?? text
 }
 
 export function localizeFinding(finding: Finding, language: Language): Finding {

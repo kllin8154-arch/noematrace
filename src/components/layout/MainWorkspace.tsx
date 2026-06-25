@@ -21,11 +21,11 @@ export function MainWorkspace() {
   const t = getCopy(language)
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col bg-[#08090d]">
-      <nav className="flex h-10 shrink-0 items-center border-b border-zinc-800 bg-[#0b0d12] px-3">
+    <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#08090d]">
+      <nav className="workspace-tabs flex h-10 shrink-0 items-center overflow-x-auto border-b border-zinc-800 bg-[#0b0d12] px-3">
         {tabs.map((tab) => (
           <button
-            className={`h-10 border-b-2 px-4 font-mono text-[12px] transition ${
+            className={`h-10 shrink-0 whitespace-nowrap border-b-2 px-4 font-mono text-[12px] transition ${
               activeTab === tab
                 ? 'border-cyan-400 text-cyan-200'
                 : 'border-transparent text-zinc-500 hover:text-zinc-200'
@@ -38,7 +38,7 @@ export function MainWorkspace() {
           </button>
         ))}
       </nav>
-      <section className="min-h-0 flex-1 overflow-auto">
+      <section className="min-h-0 flex-1 overflow-hidden">
         {activeTab === 'graph' && <TraceGraph />}
         {activeTab === 'timeline' && <TimelineView />}
         {activeTab === 'failures' && <FailuresView />}

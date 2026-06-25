@@ -3,19 +3,23 @@ import {
   getBudgetCategoryLabel,
   getContextRecommendationDescription,
   getContextRecommendationTitle,
+  getContextWasteLevelLabel,
   getRuleLabel,
   getSeverityLabel,
   getStatusLabel,
   getStepTypeLabel,
+  localizeContextWasteText,
   localizeFinding,
   localizeText,
   type Language,
 } from '../i18n'
 import { analyzeContextBudget } from './context-budget'
+import { calculateContextWasteScore } from './context-waste-score'
 
 export function generateMarkdownReport(trace: AgentTrace, findings: Finding[], language: Language = 'en'): string {
   const steps = orderedSteps(trace)
   const contextBudget = analyzeContextBudget(trace)
+  const contextWasteScore = calculateContextWasteScore(trace)
   const labels = reportLabels[language]
 
   return [
@@ -30,6 +34,9 @@ export function generateMarkdownReport(trace: AgentTrace, findings: Finding[], l
     `## ${labels.contextBudget}`,
     ...contextBudgetLines(contextBudget, language),
     '',
+    `## ${labels.contextWasteScore}`,
+    ...contextWasteScoreLines(contextWasteScore, language),
+    '',
     `## ${labels.stepsTable}`,
     stepsTable(steps, language),
     '',
@@ -42,6 +49,7 @@ const reportLabels: Record<
     summary: string
     findings: string
     contextBudget: string
+    contextWasteScore: string
     stepsTable: string
     noFindings: string
     noContext: string
@@ -61,6 +69,7 @@ const reportLabels: Record<
     summary: 'Summary',
     findings: 'Findings',
     contextBudget: 'Context Budget',
+    contextWasteScore: 'Context Waste Score',
     stepsTable: 'Steps Table',
     noFindings: 'No findings.',
     noContext: 'No contextWindow data was found on llm_call steps.',
@@ -79,6 +88,7 @@ const reportLabels: Record<
     summary: '摘要',
     findings: '发现项',
     contextBudget: '上下文预算',
+    contextWasteScore: '上下文浪费分',
     stepsTable: '步骤表',
     noFindings: '暂无发现项。',
     noContext: '未在 llm_call 步骤中找到 contextWindow 数据。',
@@ -93,6 +103,85 @@ const reportLabels: Record<
     findingCount: '发现项',
     unknown: '未知',
   },
+}
+
+function contextWasteScoreLines(
+  score: ReturnType<typeof calculateContextWasteScore>,
+  language: Language,
+): string[] {
+  if (!score.available) {
+    return [
+      language === 'zh' ? '不可用。' : 'Unavailable.',
+      '',
+      language === 'zh'
+        ? '这个 trace 没有在 llm_call 步骤中提供已标注的 contextWindow blocks。NoemaTrace 不会根据总 Token 数猜测上下文组成。'
+        : 'This trace does not include annotated contextWindow blocks on llm_call steps. NoemaTrace does not guess context composition from total token counts.',
+    ]
+  }
+
+  const metricLabels =
+    language === 'zh'
+      ? {
+          score: '分数',
+          level: '等级',
+          meaning: '含义',
+          higher: '分数越高表示上下文浪费越严重。',
+          analyzedStep: '分析步骤',
+          analyzedTokens: '分析的上下文 Token',
+          keyMetrics: '关键指标',
+          metric: '指标',
+          value: '数值',
+          totalContext: '上下文 Token 总量',
+          unused: '未使用上下文',
+          duplicated: '重复上下文',
+          tools: '工具描述',
+          history: '对话历史',
+          maxStep: '最大步骤 Token 占比',
+          recommendations: '建议',
+        }
+      : {
+          score: 'Score',
+          level: 'Level',
+          meaning: 'Meaning',
+          higher: 'higher score means more context waste.',
+          analyzedStep: 'Analyzed step',
+          analyzedTokens: 'Analyzed context tokens',
+          keyMetrics: 'Key Metrics',
+          metric: 'Metric',
+          value: 'Value',
+          totalContext: 'Total Context Tokens',
+          unused: 'Unused Context',
+          duplicated: 'Duplicated Context',
+          tools: 'Tool Descriptions',
+          history: 'Conversation History',
+          maxStep: 'Max Step Token Ratio',
+          recommendations: 'Recommendations',
+        }
+
+  return [
+    `${metricLabels.score}: ${score.score} / 100`,
+    `${metricLabels.level}: ${capitalize(getContextWasteLevelLabel(score.level, language))}`,
+    `${metricLabels.meaning}: ${metricLabels.higher}`,
+    `${metricLabels.analyzedStep}: llm_call: ${localizeText(score.analyzedStepTitle ?? '', language)}`,
+    `${metricLabels.analyzedTokens}: ${formatNumber(score.analyzedContextTokens ?? 0, language)}`,
+    '',
+    `### ${metricLabels.keyMetrics}`,
+    '',
+    `| ${metricLabels.metric} | ${metricLabels.value} |`,
+    '|---|---:|',
+    `| ${metricLabels.totalContext} | ${formatNumber(score.metrics.totalContextTokens, language)} |`,
+    `| ${metricLabels.unused} | ${formatPercent(score.metrics.unusedRatio)} |`,
+    `| ${metricLabels.duplicated} | ${formatPercent(score.metrics.duplicatedRatio)} |`,
+    `| ${metricLabels.tools} | ${formatPercent(score.metrics.toolDescriptionRatio)} |`,
+    `| ${metricLabels.history} | ${formatPercent(score.metrics.historyRatio)} |`,
+    `| ${metricLabels.maxStep} | ${formatPercent(score.metrics.maxStepTokenRatio)} |`,
+    '',
+    `### ${metricLabels.recommendations}`,
+    '',
+    ...(score.recommendations.length > 0
+      ? score.recommendations.map((recommendation) => `- ${localizeContextWasteText(recommendation, language)}`)
+      : [`- ${localizeContextWasteText(score.summary, language)}`]),
+  ]
 }
 
 function summaryLines(trace: AgentTrace, steps: TraceStep[], findings: Finding[], language: Language): string[] {
@@ -260,6 +349,10 @@ function formatMs(value: number): string {
 
 function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`
+}
+
+function capitalize(value: string): string {
+  return value.length > 0 ? `${value[0].toUpperCase()}${value.slice(1)}` : value
 }
 
 function escapeTableCell(value: string): string {

@@ -447,85 +447,36 @@
         "totalTokens": 16000,
         "blocks": [
           {
-            "id": "w10-system",
-            "category": "system_prompt",
-            "tokenCount": 750,
-            "used": true,
-            "source": "system prompt",
-            "contentPreview": "Return concise root cause and minimal fix."
-          },
-          {
-            "id": "w10-tools-unused-c",
+            "id": "w10-unused-tool-catalog",
             "category": "tool_description",
-            "tokenCount": 2900,
+            "tokenCount": 6400,
             "used": false,
-            "source": "unused tool catalog C",
-            "contentPreview": "Descriptions for report generation, file upload, browser audit, visual comparison."
+            "source": "full tool catalog",
+            "contentPreview": "Descriptions for many unrelated tools loaded even though only file search and reading were needed."
           },
           {
-            "id": "w10-tools-unused-d",
-            "category": "tool_description",
-            "tokenCount": 1700,
-            "used": false,
-            "source": "unused tool catalog D",
-            "contentPreview": "Descriptions for package inspection, dependency graphing, markdown export, link checking."
-          },
-          {
-            "id": "w10-history",
-            "category": "conversation_history",
-            "tokenCount": 4600,
-            "used": true,
-            "source": "recent conversation",
-            "contentPreview": "Recent messages about duplicate snippets and retrieval debugging."
-          },
-          {
-            "id": "w10-retriever-source",
+            "id": "w10-duplicate-retrieval-a",
             "category": "retrieved_context",
-            "tokenCount": 2600,
-            "used": true,
-            "source": "src/agents/search/retriever.ts",
-            "contentPreview": "mergeRankedResults concatenates hits; expandChunks runs before dedupe."
-          },
-          {
-            "id": "w10-retrieved-duplicate",
-            "category": "retrieved_context",
-            "tokenCount": 1600,
-            "used": false,
+            "tokenCount": 4000,
             "duplicated": true,
-            "source": "docs/retrieval.md#chunk-13",
-            "contentPreview": "Adjacent paragraph overlap repeats the same warning."
+            "source": "docs/search-agent.md",
+            "contentPreview": "Duplicate snippets about search result deduplication and chunk overlap."
           },
           {
-            "id": "w10-user",
-            "category": "user_input",
-            "tokenCount": 500,
+            "id": "w10-used-tool-descriptions",
+            "category": "tool_description",
+            "tokenCount": 1600,
             "used": true,
-            "source": "user request",
-            "contentPreview": "Explain why the search agent returns duplicate snippets."
+            "source": "active tools",
+            "contentPreview": "Descriptions for read_file and web_search that were actually relevant."
           },
           {
-            "id": "w10-scratch",
-            "category": "agent_scratchpad",
-            "tokenCount": 800,
+            "id": "w10-long-history",
+            "category": "conversation_history",
+            "tokenCount": 4000,
             "used": true,
-            "source": "analysis scratchpad",
-            "contentPreview": "Check order of merge, expand, dedupe; compare source and normalized text."
-          },
-          {
-            "id": "w10-model-output",
-            "category": "model_output",
-            "tokenCount": 350,
-            "used": true,
-            "source": "w7-assemble-context",
-            "contentPreview": "Preliminary finding: dedupe is too early in the pipeline."
-          },
-          {
-            "id": "w10-unknown",
-            "category": "unknown",
-            "tokenCount": 200,
-            "used": false,
-            "source": "collector metadata",
-            "contentPreview": "Adapter timestamp and local run id."
+            "source": "conversation",
+            "contentPreview": "Long prior conversation carried into the final diagnosis."
           }
         ]
       }

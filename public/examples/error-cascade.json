@@ -217,6 +217,59 @@
         "input": 0.013,
         "output": 0.009,
         "total": 0.022
+      },
+      "contextWindow": {
+        "totalTokens": 9000,
+        "blocks": [
+          {
+            "id": "e9-unused-error-notes",
+            "category": "agent_scratchpad",
+            "tokenCount": 2200,
+            "used": false,
+            "source": "retry scratchpad",
+            "contentPreview": "Failed retry notes for npm test, npm run test and npm run build commands."
+          },
+          {
+            "id": "e9-duplicate-logs",
+            "category": "retrieved_context",
+            "tokenCount": 1000,
+            "duplicated": true,
+            "source": "terminal output",
+            "contentPreview": "Repeated setup file missing error copied from earlier failed commands."
+          },
+          {
+            "id": "e9-error-history",
+            "category": "conversation_history",
+            "tokenCount": 3300,
+            "used": true,
+            "source": "conversation",
+            "contentPreview": "Conversation history describing the command cascade and repeated failures."
+          },
+          {
+            "id": "e9-recovery-scratchpad",
+            "category": "agent_scratchpad",
+            "tokenCount": 1500,
+            "used": true,
+            "source": "diagnosis plan",
+            "contentPreview": "Plan to stop retrying and inspect Vitest configuration first."
+          },
+          {
+            "id": "e9-system-policy",
+            "category": "system_prompt",
+            "tokenCount": 500,
+            "used": true,
+            "source": "system",
+            "contentPreview": "Run focused verification and diagnose the first failure."
+          },
+          {
+            "id": "e9-user-request",
+            "category": "user_input",
+            "tokenCount": 500,
+            "used": true,
+            "source": "user",
+            "contentPreview": "Run the focused timeline tests after a refactor and diagnose why the command fails."
+          }
+        ]
       }
     },
     {
