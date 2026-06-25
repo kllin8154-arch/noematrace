@@ -8,7 +8,7 @@ NoemaTrace is an offline-first frontend tool for inspecting a single AI agent ru
 
 No backend. No database. No account. No LLM API calls. It is a local debugging workbench for understanding why an agent behaved the way it did.
 
-![NoemaTrace UI screenshot](docs/noematrace-screenshot.png)
+![NoemaTrace UI screenshot](docs/noematrace-screenshot1.png)
 
 > Current version: v0.1, actively evolving.
 

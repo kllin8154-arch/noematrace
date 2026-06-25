@@ -8,7 +8,7 @@ NoemaTrace 是一个离线优先的纯前端开发者工具。你把一次 AI Ag
 
 它不是平台，也不需要账号、后端或数据库。它更像一个本地调试台：当 Agent 跑偏、重复读文件、连续失败、上下文塞太满时，用它复盘一次具体运行。
 
-![NoemaTrace 界面截图](docs/noematrace-screenshot.png)
+![NoemaTrace 界面截图](docs/noematrace-screenshot1.png)
 
 > 当前版本：v0.1，仍在快速迭代中。
 
