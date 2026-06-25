@@ -1,57 +1,57 @@
 # NoemaTrace
 
-[English](README.en.md) · [Live Demo](https://noematrace.vercel.app/) · [GitHub Repo](https://github.com/kllin8154-arch/noematrace)
+[英文版](README.en.md) · [在线演示](https://noematrace.vercel.app/) · [代码仓库](https://github.com/kllin8154-arch/noematrace)
 
-**Browser-only Agent Trace Replayer with Context Waste Score**
+**浏览器内运行的智能体执行回放工具，内置上下文浪费评分。**
 
-> 拖入一份 trace JSON，立刻检查 Agent 的执行路径、时间线、失败原因、Token 使用量，以及上下文窗口浪费了多少。
+> 拖入一份跟踪文件，立刻查看智能体的执行路径、时间线、失败原因、令牌使用量，以及上下文窗口浪费了多少。
 
-![NoemaTrace Context Waste Score](docs/screenshots/context-waste-score.png)
+![NoemaTrace 上下文浪费评分](docs/screenshots/context-waste-score.png)
 
-No backend. No database. No SDK. No signup. Just drag, replay, inspect.
+无需后端。无需数据库。无需采集工具包。无需注册。拖入文件，回放执行，检查问题。
 
-NoemaTrace 的关键差异是 **Context Waste Score**：它用规则分析上下文窗口中未使用、重复、过大或被工具描述占满的内容，让你知道 Agent 不是只“用了多少 token”，而是“浪费了多少上下文”。
+NoemaTrace 的关键差异是 **上下文浪费评分**：它用规则分析上下文窗口中未使用、重复、过大或被工具描述占满的内容，让你知道智能体不是只用了多少令牌，而是浪费了多少上下文。
 
 ## 它解决什么问题
 
-一次 Agent 执行通常不是一问一答。它可能包含用户输入、系统提示词、模型调用、工具调用、检索上下文、重试、错误和最终回答。
+一次智能体执行通常不是一问一答。它可能包含用户输入、系统提示词、模型调用、工具调用、检索上下文、重试、错误和最终回答。
 
-原始日志很难读。NoemaTrace 把一份 trace JSON 变成可交互界面，让你快速回答：
+原始日志很难读。NoemaTrace 把一份跟踪文件变成可交互界面，让你快速回答：
 
-1. Agent 每一步到底做了什么？
+1. 智能体每一步到底做了什么？
 2. 它为什么失败、卡住或重复调用工具？
-3. 哪一步消耗了最多 token、时间或成本？
+3. 哪一步消耗了最多令牌、时间或成本？
 4. 上下文窗口里哪些内容真正被用到，哪些只是浪费？
-5. 这次修复应该改 prompt、工具、检索、重试逻辑，还是执行策略？
+5. 这次修复应该改提示词、工具、检索、重试逻辑，还是执行策略？
 
 ## 适用场景
 
-- 调试一个反复读取同一文件的 coding agent。
+- 调试一个反复读取同一文件的编程智能体。
 - 复盘一次工具调用失败后的错误级联。
-- 找出高 token、高成本或高延迟的关键步骤。
-- 分析 RAG / Agent 上下文窗口中未使用、重复或过大的内容块。
-- 给团队演示 agent trace、上下文预算和失败分析是怎么工作的。
-- 在不接入后端、不上传数据、不改业务代码的情况下检查一次 agent run。
+- 找出高令牌、高成本或高延迟的关键步骤。
+- 分析检索增强或智能体上下文窗口中未使用、重复或过大的内容块。
+- 给团队演示智能体跟踪、上下文预算和失败分析是怎么工作的。
+- 在不接入后端、不上传数据、不改业务代码的情况下检查一次智能体执行。
 
-## How It Differs
+## 和其他工具的区别
 
-Agent observability、replay 和生产追踪领域已经有很多成熟工具。NoemaTrace 只聚焦一个更窄的工作流：
+智能体观测、执行回放和生产追踪领域已经有很多成熟工具。NoemaTrace 只聚焦一个更窄的工作流：
 
-**single-run, zero-setup, browser-only inspection of agent traces with context waste diagnostics.**
+**单次执行、零配置、只在浏览器内检查智能体跟踪，并诊断上下文浪费。**
 
-- **Production platforms** like Langfuse and LangSmith are built for continuous tracing, dashboards, datasets, and team workflows.
-- **Local debuggers** may require a backend, database, SDK, CLI setup, or trace capture layer.
-- **NoemaTrace** trades persistence and live capture for the lowest possible inspection path: drag in a trace JSON and inspect it in the browser.
+- 生产级观测平台更适合持续追踪、仪表盘、数据集和团队协作。
+- 本地调试器往往需要后端、数据库、采集工具包、命令行设置或采集层。
+- NoemaTrace 放弃持久化和实时采集，换来更短的检查路径：拖入一份跟踪文件，直接在浏览器里看。
 
 NoemaTrace 的不同点：
 
-- **Pure frontend**：没有后端、数据库或本地服务。
-- **No SDK required**：读取 trace 文件，不负责采集 trace。
-- **Context Waste Score**：量化未使用、重复、过大、工具描述过重的上下文。
-- **Offline-first**：所有分析都在浏览器本地运行。
-- **Rule-based analysis**：不调用 LLM API，不需要 API key，也没有隐藏评分。
+- **纯前端**：没有后端、数据库或本地服务。
+- **不需要采集工具包**：读取跟踪文件，而不是负责采集跟踪。
+- **上下文浪费评分**：量化未使用、重复、过大、工具描述过重的上下文。
+- **离线优先**：所有分析都在浏览器本地运行。
+- **规则分析**：不调用模型接口，不需要密钥，也没有隐藏评分。
 
-## Quick Start
+## 快速开始
 
 ```bash
 git clone https://github.com/kllin8154-arch/noematrace.git
@@ -60,7 +60,7 @@ npm install
 npm run dev
 ```
 
-打开 `http://localhost:5173`，选择内置 demo trace，或拖入你自己的 NoemaTrace `schemaVersion: "0.1"` JSON 文件。
+打开 `http://localhost:5173`，选择内置示例，或拖入你自己的 NoemaTrace `schemaVersion: "0.1"` 跟踪文件。
 
 常用检查命令：
 
@@ -70,114 +70,114 @@ npx vitest run
 npm run build
 ```
 
-生产构建输出目录是 `dist`。`package.json` 当前没有 `test` script，所以测试命令使用 `npx vitest run`。
+生产构建输出目录是 `dist`。当前 `package.json` 没有配置测试脚本，所以测试命令使用 `npx vitest run`。
 
-## Feature Overview
+## 功能概览
 
-### Graph View
+### 图谱视图
 
-Graph View 显示基于 `parentId` 的父子执行树，帮助你理解 Agent 的决策流、工具调用、工具结果、重试和最终回答之间的关系。
+图谱视图根据 `parentId` 显示父子执行树，帮助你理解智能体在计划、工具调用、工具结果、重试和最终回答之间的决策流。
 
-### Timeline View
+### 时间线视图
 
-Timeline View 按执行顺序展示每个 step 的耗时，帮助识别慢 LLM 调用、慢工具调用和重复重试带来的时间浪费。
+时间线视图按执行顺序展示每个步骤的耗时，帮助识别缓慢的模型调用、工具调用和重复重试。
 
-### Failure Analysis
+### 失败分析
 
-Failure Analysis 使用规则检测：
+失败分析使用规则检测：
 
-- Repeated Tool Call
-- Error Cascade
-- High Cost Node
-- Unused Context
-- Risky Tool Call experimental
+- 重复工具调用
+- 错误级联
+- 高成本节点
+- 未使用上下文
+- 实验性的危险工具调用
 
-每条 finding 都会给出受影响 step 和建议。
+每条发现项都会给出受影响步骤和建议。
 
-### Context Budget
+### 上下文预算
 
-Context Budget 展示已标注 `contextWindow` 的组成，包括 system prompt、tool descriptions、conversation history、retrieved context、user input、model output、agent scratchpad 和 unknown。
+上下文预算展示已标注 `contextWindow` 的组成，包括系统提示词、工具描述、对话历史、检索上下文、用户输入、模型输出、智能体草稿和未知内容。
 
-NoemaTrace does not infer context composition from total token counts. If `contextWindow` is missing, the score is unavailable.
+NoemaTrace 不会根据总令牌数猜测上下文组成。如果缺少 `contextWindow`，上下文浪费评分不可用。
 
-### Context Waste Score
+### 上下文浪费评分
 
-Context Waste Score 越高，表示上下文浪费越严重。它基于最大的已标注 `llm_call` context window，使用规则计算未使用内容、重复内容、工具描述占比、历史对话占比和高 token step 风险。
+分数越高，表示上下文浪费越严重。评分基于最大的已标注 `llm_call` 上下文窗口，并用规则计算未使用内容、重复内容、工具描述占比、历史对话占比和高令牌步骤风险。
 
-它是 rule-based，不是 LLM scoring；NoemaTrace 不会调用模型 API 来给 trace 打分。
+它是规则评分，不是模型评分；NoemaTrace 不会调用模型接口来给跟踪文件打分。
 
-## Screenshots
+## 截图
 
-### Context Waste Score
+### 上下文浪费评分
 
-![Context Waste Score](docs/screenshots/context-waste-score.png)
+![上下文浪费评分](docs/screenshots/context-waste-score.png)
 
-### Moderate Waste Example
+### 中等浪费示例
 
-![Moderate Context Waste](docs/screenshots/context-waste-moderate.png)
+![中等上下文浪费](docs/screenshots/context-waste-moderate.png)
 
-### Graph View
+### 图谱视图
 
-![Graph View](docs/screenshots/graph-view.png)
+![图谱视图](docs/screenshots/graph-view.png)
 
-### Timeline View
+### 时间线视图
 
-![Timeline View](docs/screenshots/timeline-view.png)
+![时间线视图](docs/screenshots/timeline-view.png)
 
-### Failure Analysis
+### 失败分析
 
-![Failure Analysis](docs/screenshots/failure-analysis.png)
+![失败分析](docs/screenshots/failure-analysis.png)
 
-### Context Budget
+### 上下文预算
 
-![Context Budget](docs/screenshots/context-budget.png)
+![上下文预算](docs/screenshots/context-budget.png)
 
-### Report Export
+### 报告导出
 
-![Report Export](docs/screenshots/report-export.png)
+![报告导出](docs/screenshots/report-export.png)
 
-## Demo Traces
+## 内置示例
 
-| Demo | Scenario | Demonstrates |
+| 示例文件 | 场景 | 演示内容 |
 | --- | --- | --- |
-| `successful-coding-agent.json` | Successful UI bug fix | Low waste score, graph, timeline, report |
-| `failed-tool-loop.json` | Repeated `read_file` loop | Repeated tool call, moderate waste |
-| `error-cascade.json` | Shell failures and retries | Error cascade, retry overhead |
-| `context-waste-run.json` | Tool-heavy context pollution | High Context Waste Score, unused context |
+| `successful-coding-agent.json` | 成功修复界面问题 | 低浪费评分、图谱、时间线、报告 |
+| `failed-tool-loop.json` | 反复读取同一文件 | 重复工具调用、中等浪费 |
+| `error-cascade.json` | 命令失败和重试 | 错误级联、重试开销 |
+| `context-waste-run.json` | 工具描述污染上下文 | 高上下文浪费评分、未使用上下文 |
 
-## Trace 格式
+## 跟踪格式
 
-NoemaTrace 读取 `schemaVersion: "0.1"` 的 JSON。
+NoemaTrace 读取 `schemaVersion: "0.1"` 的跟踪文件。
 
 核心概念：
 
-- `AgentTrace`：一次 agent run。
+- `AgentTrace`：一次智能体执行。
 - `TraceStep`：一次执行步骤。
 - `parentId`：执行树关系。
 - `order`：执行顺序。
-- `contextWindow`：只出现在 `llm_call` step 上的上下文预算数据。
+- `contextWindow`：只出现在 `llm_call` 步骤上的上下文预算数据。
 - `Finding`：规则分析器输出的问题和建议。
 
 权威类型定义在 `src/types/schema.ts`。
 
-## Not a Platform
+## 它不是什么
 
-NoemaTrace is not:
+NoemaTrace 不是：
 
-- a Langfuse / LangSmith replacement
-- a production monitoring system
-- a trace collection SDK
-- a backend service
-- an eval platform
+- 生产级观测平台的替代品
+- 生产监控系统
+- 跟踪采集工具包
+- 后端服务
+- 评测平台
 
-NoemaTrace is:
+NoemaTrace 是：
 
-- a local-first single-run inspector
-- a browser-only trace viewer
-- a context waste diagnostic tool
+- 本地优先的单次执行检查器
+- 只在浏览器内运行的跟踪查看器
+- 上下文浪费诊断工具
 
-如果你需要生产追踪、告警、留存、团队协作或线上仪表盘，请使用专门的平台。如果你手上有一份 trace JSON，想尽快看懂发生了什么，NoemaTrace 就是为这个场景做的。
+如果你需要生产追踪、告警、留存、团队协作或线上仪表盘，请使用专门的平台。如果你手上有一份跟踪文件，想尽快看懂发生了什么，NoemaTrace 就是为这个场景做的。
 
-## License
+## 许可证
 
 MIT

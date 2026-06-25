@@ -1,6 +1,6 @@
 # NoemaTrace
 
-[中文](README.md) · [Live Demo](https://noematrace.vercel.app/) · [GitHub Repo](https://github.com/kllin8154-arch/noematrace)
+[Chinese](README.md) · [Live Demo](https://noematrace.vercel.app/) · [GitHub Repo](https://github.com/kllin8154-arch/noematrace)
 
 **Browser-only Agent Trace Replayer with Context Waste Score**
 
