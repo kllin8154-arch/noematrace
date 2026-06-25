@@ -1,23 +1,16 @@
 # NoemaTrace
 
-[中文](README.md) · [Live Demo](https://noematrace.vercel.app) · [GitHub](https://github.com/kllin8154-arch/noematrace)
+[中文](README.md) · [Live Demo](https://noematrace.vercel.app/) · [GitHub Repo](https://github.com/kllin8154-arch/noematrace)
 
-The only agent trace viewer that scores how much of your context window is wasted.
+**Browser-only Agent Trace Replayer with Context Waste Score**
 
-NoemaTrace is a zero-setup, browser-only, offline-first trace viewer for AI agent runs. Drop in a trace JSON file, then inspect the agent's decision path, tool calls, failures, token usage, context budget, and Context Waste Score in one local UI.
+> Drop a trace JSON file and instantly inspect your agent's execution path, timeline, failures, token usage, and how much context was wasted.
 
-**Live demo:** [https://noematrace.vercel.app](https://noematrace.vercel.app)
+![NoemaTrace Context Waste Score](docs/screenshots/context-waste-score.png)
 
-![NoemaTrace UI overview](docs/img.png)
+No backend. No database. No SDK. No signup. Just drag, replay, inspect.
 
-## Screenshots
-
-| | |
-| --- | --- |
-| ![NoemaTrace screenshot 1](docs/img.png) | ![NoemaTrace screenshot 2](docs/img_1.png) |
-| ![NoemaTrace screenshot 3](docs/img_2.png) | ![NoemaTrace screenshot 4](docs/img_3.png) |
-| ![NoemaTrace screenshot 5](docs/img_4.png) | ![NoemaTrace screenshot 6](docs/img_5.png) |
-| ![NoemaTrace screenshot 7](docs/img_6.png) | |
+The key differentiator is **Context Waste Score**: a rule-based score that shows how much of the agent's context window was unused, duplicated, oversized, or dominated by tool descriptions.
 
 ## What It Solves
 
@@ -40,19 +33,25 @@ Raw logs are hard to reason about. NoemaTrace turns one trace JSON into an inter
 - Teach or document how agent traces, context budgets, and failure analysis work.
 - Inspect one agent run without running a backend, uploading data, or changing application code.
 
-## Why NoemaTrace
-
-Most agent debugging tools ask you to run infrastructure, install a collector, wire in an SDK, use a database, or work from a CLI. NoemaTrace makes a narrower tradeoff: it reads one trace file and helps you understand one run quickly.
-
-| Difference | What it means |
-| --- | --- |
-| Pure frontend, zero backend | No server, no database, no account system, no API key. Open the app and drag in JSON. |
-| Context Waste Score | Other tools focus on replay or diff. NoemaTrace also quantifies wasted context from unused blocks, duplicated content, heavy tool descriptions, long history, and high-token steps. |
-| No SDK intrusion | NoemaTrace only reads trace files. You do not need to change your agent code, install a runtime SDK, or send data to a hosted platform. |
-
 ## How It Differs
 
-Tools like Langfuse and LangSmith are production platforms; local debuggers like agenttrace and agent-replay require a backend or CLI setup. NoemaTrace trades persistence and live capture for zero-setup inspection: drag a JSON, read it, done.
+There are already strong tools for agent observability, replay, and production tracing.
+
+NoemaTrace focuses on a narrower workflow:
+
+**single-run, zero-setup, browser-only inspection of agent traces with context waste diagnostics.**
+
+- **Production platforms** like Langfuse and LangSmith are built for continuous tracing, dashboards, datasets, and team workflows.
+- **Local debuggers** may require a backend, database, SDK, CLI setup, or trace capture layer.
+- **NoemaTrace** trades persistence and live capture for the lowest possible inspection path: drag in a trace JSON and inspect it in the browser.
+
+What makes NoemaTrace different:
+
+- **Pure frontend**: no backend, no database, no local service
+- **No SDK required**: it reads trace files instead of collecting them
+- **Context Waste Score**: quantifies unused, duplicated, oversized, and tool-heavy context
+- **Offline-first**: all analysis runs locally in the browser
+- **Rule-based analysis**: no LLM API, no API key, no hidden scoring
 
 ## Quick Start
 
@@ -73,38 +72,80 @@ npx vitest run
 npm run build
 ```
 
-The production build outputs to `dist`.
+The production build outputs to `dist`. There is currently no `test` script in `package.json`, so tests are run with `npx vitest run`.
 
-## Core Views
+## Feature Overview
 
-### Graph
+### Graph View
 
-See the agent run as an execution tree. Parent-child relationships are derived from `parentId`, then laid out automatically so you can follow planning, tool calls, tool results, retries, and final answers.
+Shows the parent-child execution tree derived from `parentId`, helping you understand the agent's decision flow across planning, tool calls, tool results, retries, and final answers.
 
-### Timeline
+### Timeline View
 
-Read the run in execution order. Each step is colored by type and sized by latency, making slow model calls, repeated tools, and wasted retry loops easier to spot.
+Shows latency by step in execution order, making slow LLM calls, tool calls, and retries easier to identify.
 
-### Failures
+### Failure Analysis
 
-Review rule-based findings for repeated tool calls, high-cost nodes, error cascades, unused context, and experimental risky tool calls. Findings link back to affected steps.
+Runs rule-based analyzers for:
 
-### Budget
+- Repeated Tool Call
+- Error Cascade
+- High Cost Node
+- Unused Context
+- Risky Tool Call experimental
 
-Break down annotated `contextWindow` blocks by category: system prompt, tool descriptions, conversation history, retrieved context, user input, model output, scratchpad, and unknown.
+Each finding links back to affected steps and includes a recommendation.
 
-### Waste Score
+### Context Budget
 
-Context Waste Score turns context engineering problems into a single inspection signal. Higher scores mean more waste from unused context, duplicated blocks, heavy tool descriptions, large conversation history, or high-token steps.
+Shows annotated `contextWindow` composition: system prompt, tool descriptions, conversation history, retrieved context, user input, model output, agent scratchpad, and unknown.
 
-## Built-In Demos
+NoemaTrace does not infer context composition from total token counts. If `contextWindow` is missing, the score is unavailable.
 
-| Demo | Scenario | What to inspect |
+### Context Waste Score
+
+Higher means more waste. The score is based on the largest annotated `llm_call` context window and uses rules for unused blocks, duplicated blocks, tool-description weight, conversation-history weight, and high-token steps.
+
+It is rule-based, not LLM scoring. NoemaTrace never calls a model API to score your trace.
+
+## Screenshots
+
+### Context Waste Score
+
+![Context Waste Score](docs/screenshots/context-waste-score.png)
+
+### Moderate Waste Example
+
+![Moderate Context Waste](docs/screenshots/context-waste-moderate.png)
+
+### Graph View
+
+![Graph View](docs/screenshots/graph-view.png)
+
+### Timeline View
+
+![Timeline View](docs/screenshots/timeline-view.png)
+
+### Failure Analysis
+
+![Failure Analysis](docs/screenshots/failure-analysis.png)
+
+### Context Budget
+
+![Context Budget](docs/screenshots/context-budget.png)
+
+### Report Export
+
+![Report Export](docs/screenshots/report-export.png)
+
+## Demo Traces
+
+| Demo | Scenario | Demonstrates |
 | --- | --- | --- |
-| `successful-coding-agent.json` | A coding agent fixes a transparent dropdown in a React component. | Graph, Timeline, details, report export, balanced context budget. |
-| `failed-tool-loop.json` | The agent repeatedly reads the same file with identical arguments. | Repeated Tool Call and High Cost Node findings. |
-| `error-cascade.json` | A failed command triggers several follow-up failures. | Error Cascade finding and wasted retry time. |
-| `context-waste-run.json` | Tool descriptions and overlapping retrieval chunks inflate the context window. | Unused Context, Context Budget recommendations, and Context Waste Score. |
+| `successful-coding-agent.json` | Successful UI bug fix | Low waste score, graph, timeline, report |
+| `failed-tool-loop.json` | Repeated `read_file` loop | Repeated tool call, moderate waste |
+| `error-cascade.json` | Shell failures and retries | Error cascade, retry overhead |
+| `context-waste-run.json` | Tool-heavy context pollution | High Context Waste Score, unused context |
 
 ## Trace Format
 
@@ -123,19 +164,21 @@ The authoritative schema lives in `src/types/schema.ts`.
 
 ## Not a Platform
 
-NoemaTrace is intentionally not a production observability platform.
+NoemaTrace is not:
 
-It does not provide:
+- a Langfuse / LangSmith replacement
+- a production monitoring system
+- a trace collection SDK
+- a backend service
+- an eval platform
 
-- backend services
-- user accounts
-- databases or persistence
-- live monitoring
-- hosted trace ingestion
-- trace collection SDKs
-- LLM API calls
+NoemaTrace is:
 
-It is a local inspection tool for individual agent runs. If you need production tracing, dashboards, alerts, retention, or team workflows, use a platform built for that. If you have one trace JSON and want to understand what happened, use NoemaTrace.
+- a local-first single-run inspector
+- a browser-only trace viewer
+- a context waste diagnostic tool
+
+If you need production tracing, dashboards, alerts, retention, or team workflows, use a platform built for that. If you have one trace JSON and want to understand what happened, use NoemaTrace.
 
 ## License
 
