@@ -1,0 +1,534 @@
+{
+  "schemaVersion": "0.1",
+  "traceId": "demo-context-waste-001",
+  "title": "Context Waste Run",
+  "task": "Explain why the search agent returns duplicate snippets and propose a minimal fix.",
+  "source": "noematrace",
+  "startedAt": "2026-06-25T12:05:00.000Z",
+  "endedAt": "2026-06-25T12:05:44.500Z",
+  "metadata": {
+    "failureMode": "The agent loaded a broad tool catalog and overlapping retrieved chunks before answering.",
+    "activeToolsUsed": [
+      "read_file",
+      "web_search"
+    ],
+    "toolDescriptionsLoaded": 16
+  },
+  "steps": [
+    {
+      "id": "w1-user-request",
+      "order": 1,
+      "type": "user_input",
+      "title": "User asks about duplicate search snippets",
+      "status": "success",
+      "latencyMs": 0,
+      "input": "The search agent repeats the same paragraph from docs in three snippets. Explain the cause and suggest a minimal fix.",
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "w2-system-context",
+      "parentId": "w1-user-request",
+      "order": 2,
+      "type": "system_prompt",
+      "title": "Load broad agent instructions",
+      "status": "success",
+      "latencyMs": 140,
+      "input": "Use all available tool descriptions and recent conversation before deciding how to debug retrieval.",
+      "output": "Broad instruction set loaded.",
+      "tokens": {
+        "input": 1120,
+        "output": 80,
+        "total": 1200
+      }
+    },
+    {
+      "id": "w3-select-tools",
+      "parentId": "w2-system-context",
+      "order": 3,
+      "type": "llm_call",
+      "title": "Select tools from oversized catalog",
+      "status": "warning",
+      "latencyMs": 6900,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "task": "Debug duplicate snippets",
+        "availableTools": 16
+      },
+      "output": {
+        "selectedTools": [
+          "read_file",
+          "web_search"
+        ],
+        "unusedToolCatalog": "Most loaded tools were irrelevant."
+      },
+      "tokens": {
+        "input": 13800,
+        "output": 1200,
+        "total": 15000
+      },
+      "costUsd": {
+        "input": 0.0345,
+        "output": 0.012,
+        "total": 0.0465
+      },
+      "contextWindow": {
+        "totalTokens": 13800,
+        "blocks": [
+          {
+            "id": "w3-system",
+            "category": "system_prompt",
+            "tokenCount": 900,
+            "used": true,
+            "source": "project-guidelines.md",
+            "contentPreview": "Offline-first trace inspection constraints."
+          },
+          {
+            "id": "w3-tools-read",
+            "category": "tool_description",
+            "tokenCount": 900,
+            "used": true,
+            "source": "read_file",
+            "contentPreview": "Read a project file by path."
+          },
+          {
+            "id": "w3-tools-search",
+            "category": "tool_description",
+            "tokenCount": 900,
+            "used": true,
+            "source": "web_search",
+            "contentPreview": "Search web or docs when local context is insufficient."
+          },
+          {
+            "id": "w3-tools-write",
+            "category": "tool_description",
+            "tokenCount": 1000,
+            "used": false,
+            "source": "write_file",
+            "contentPreview": "Write a file after generating a patch."
+          },
+          {
+            "id": "w3-tools-shell",
+            "category": "tool_description",
+            "tokenCount": 1000,
+            "used": false,
+            "source": "shell",
+            "contentPreview": "Run a local shell command and capture output."
+          },
+          {
+            "id": "w3-tools-browser",
+            "category": "tool_description",
+            "tokenCount": 900,
+            "used": false,
+            "source": "browser",
+            "contentPreview": "Drive browser interactions for visual QA."
+          },
+          {
+            "id": "w3-history",
+            "category": "conversation_history",
+            "tokenCount": 4200,
+            "used": true,
+            "source": "previous turns",
+            "contentPreview": "Earlier discussion about search-agent UX and source ranking."
+          },
+          {
+            "id": "w3-user",
+            "category": "user_input",
+            "tokenCount": 700,
+            "used": true,
+            "source": "user request",
+            "contentPreview": "The search agent repeats the same paragraph in three snippets."
+          },
+          {
+            "id": "w3-scratch",
+            "category": "agent_scratchpad",
+            "tokenCount": 800,
+            "used": true,
+            "source": "planning scratchpad",
+            "contentPreview": "Hypothesis: dedupe may run after chunk expansion."
+          },
+          {
+            "id": "w3-unknown",
+            "category": "unknown",
+            "tokenCount": 500,
+            "used": false,
+            "source": "collector footer",
+            "contentPreview": "Trace collector footer and run metadata."
+          }
+        ]
+      }
+    },
+    {
+      "id": "w4-list-agent-files",
+      "parentId": "w3-select-tools",
+      "order": 4,
+      "type": "tool_call",
+      "title": "List search agent files",
+      "status": "success",
+      "latencyMs": 420,
+      "tool": {
+        "name": "list_directory",
+        "arguments": {
+          "path": "src/agents/search"
+        }
+      },
+      "input": {
+        "path": "src/agents/search"
+      },
+      "output": [
+        "src/agents/search/search-agent.ts",
+        "src/agents/search/retriever.ts",
+        "src/agents/search/ranker.ts"
+      ],
+      "tokens": {
+        "input": 90,
+        "output": 60,
+        "total": 150
+      }
+    },
+    {
+      "id": "w5-directory-result",
+      "parentId": "w4-list-agent-files",
+      "order": 5,
+      "type": "tool_result",
+      "title": "Search agent directory snapshot",
+      "status": "success",
+      "latencyMs": 220,
+      "tool": {
+        "name": "list_directory"
+      },
+      "output": {
+        "files": [
+          "search-agent.ts",
+          "retriever.ts",
+          "ranker.ts"
+        ],
+        "likelyFile": "src/agents/search/retriever.ts"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 840,
+        "total": 840
+      }
+    },
+    {
+      "id": "w6-retrieve-docs",
+      "parentId": "w5-directory-result",
+      "order": 6,
+      "type": "retrieval",
+      "title": "Retrieve overlapping documentation chunks",
+      "status": "warning",
+      "latencyMs": 3100,
+      "input": {
+        "query": "duplicate snippets source ranking deduplication retriever.ts"
+      },
+      "output": {
+        "chunks": [
+          {
+            "source": "docs/retrieval.md#chunk-12",
+            "preview": "Chunk expansion can duplicate adjacent paragraphs."
+          },
+          {
+            "source": "docs/retrieval.md#chunk-13",
+            "preview": "Adjacent paragraphs overlap by 80% and should be deduplicated before ranking."
+          },
+          {
+            "source": "docs/search-agent.md#chunk-04",
+            "preview": "Duplicate snippets appear when the same paragraph is returned twice."
+          }
+        ]
+      },
+      "tokens": {
+        "input": 1200,
+        "output": 8000,
+        "total": 9200
+      },
+      "costUsd": {
+        "input": 0.018,
+        "output": 0.022,
+        "total": 0.04
+      }
+    },
+    {
+      "id": "w7-assemble-context",
+      "parentId": "w6-retrieve-docs",
+      "order": 7,
+      "type": "llm_call",
+      "title": "Reason with broad history and duplicate chunks",
+      "status": "warning",
+      "latencyMs": 8200,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "retrievedChunks": 3,
+        "toolDescriptionsLoaded": 16,
+        "conversationTurnsIncluded": 18
+      },
+      "output": {
+        "finding": "Deduplication appears to happen after rank merging, so overlapping chunks survive."
+      },
+      "tokens": {
+        "input": 15500,
+        "output": 1200,
+        "total": 16700
+      },
+      "costUsd": {
+        "input": 0.03875,
+        "output": 0.012,
+        "total": 0.05075
+      },
+      "contextWindow": {
+        "totalTokens": 15500,
+        "blocks": [
+          {
+            "id": "w7-system",
+            "category": "system_prompt",
+            "tokenCount": 850,
+            "used": true,
+            "source": "system prompt",
+            "contentPreview": "Explain root cause and propose minimal fix."
+          },
+          {
+            "id": "w7-tools-a",
+            "category": "tool_description",
+            "tokenCount": 2800,
+            "used": false,
+            "source": "unused tool catalog A",
+            "contentPreview": "Descriptions for write_file, shell, browser, upload_artifact, inspect_dom."
+          },
+          {
+            "id": "w7-tools-b",
+            "category": "tool_description",
+            "tokenCount": 2400,
+            "used": false,
+            "source": "unused tool catalog B",
+            "contentPreview": "Descriptions for screenshot, run_lighthouse, compare_snapshots, start_preview."
+          },
+          {
+            "id": "w7-history",
+            "category": "conversation_history",
+            "tokenCount": 5000,
+            "used": true,
+            "source": "conversation history",
+            "contentPreview": "Long context about prior search-agent ranking behavior."
+          },
+          {
+            "id": "w7-history-old",
+            "category": "conversation_history",
+            "tokenCount": 1100,
+            "used": false,
+            "source": "old conversation turns",
+            "contentPreview": "Earlier unrelated deployment checklist included by the trace collector."
+          },
+          {
+            "id": "w7-retrieved-12",
+            "category": "retrieved_context",
+            "tokenCount": 1600,
+            "used": true,
+            "duplicated": true,
+            "source": "docs/retrieval.md#chunk-12",
+            "contentPreview": "Chunk expansion can duplicate adjacent paragraphs."
+          },
+          {
+            "id": "w7-retrieved-13",
+            "category": "retrieved_context",
+            "tokenCount": 1700,
+            "used": true,
+            "duplicated": true,
+            "source": "docs/retrieval.md#chunk-13",
+            "contentPreview": "Adjacent paragraphs overlap by 80%."
+          },
+          {
+            "id": "w7-model-output",
+            "category": "model_output",
+            "tokenCount": 1050,
+            "used": true,
+            "source": "w3-select-tools",
+            "contentPreview": "Selected read_file and web_search but carried unused tool catalog forward."
+          },
+          {
+            "id": "w7-user",
+            "category": "user_input",
+            "tokenCount": 600,
+            "used": true,
+            "source": "user request",
+            "contentPreview": "Duplicate paragraph appears in three snippets."
+          },
+          {
+            "id": "w7-unknown",
+            "category": "unknown",
+            "tokenCount": 400,
+            "used": false,
+            "source": "collector metadata",
+            "contentPreview": "Trace adapter run details not relevant to retrieval analysis."
+          }
+        ]
+      }
+    },
+    {
+      "id": "w8-read-retriever",
+      "parentId": "w7-assemble-context",
+      "order": 8,
+      "type": "tool_call",
+      "title": "Read retriever implementation",
+      "status": "success",
+      "latencyMs": 640,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/agents/search/retriever.ts"
+        }
+      },
+      "input": {
+        "path": "src/agents/search/retriever.ts"
+      },
+      "output": "Read completed: 213 lines.",
+      "tokens": {
+        "input": 90,
+        "output": 70,
+        "total": 160
+      }
+    },
+    {
+      "id": "w9-retriever-source",
+      "parentId": "w8-read-retriever",
+      "order": 9,
+      "type": "tool_result",
+      "title": "Retriever source snapshot",
+      "status": "success",
+      "latencyMs": 260,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/agents/search/retriever.ts",
+        "excerpt": "mergeRankedResults() concatenates vector and keyword hits, then expandChunks() runs before dedupeBySourceAndText()."
+      },
+      "tokens": {
+        "input": 0,
+        "output": 4300,
+        "total": 4300
+      }
+    },
+    {
+      "id": "w10-final-analysis",
+      "parentId": "w9-retriever-source",
+      "order": 10,
+      "type": "llm_call",
+      "title": "Generate context-heavy diagnosis",
+      "status": "warning",
+      "latencyMs": 12100,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "sourceFile": "src/agents/search/retriever.ts",
+        "duplicatedChunks": [
+          "chunk-12",
+          "chunk-13"
+        ]
+      },
+      "output": {
+        "rootCause": "expandChunks() runs before dedupeBySourceAndText(), so overlapping chunks become distinct ranked snippets.",
+        "minimalFix": "Move dedupeBySourceAndText() after expansion and normalize whitespace before comparing previews.",
+        "contextWaste": "The answer only needed read_file plus two retrieved chunks; most tool catalog text was unused."
+      },
+      "tokens": {
+        "input": 16000,
+        "output": 1500,
+        "total": 17500
+      },
+      "costUsd": {
+        "input": 0.04,
+        "output": 0.015,
+        "total": 0.055
+      },
+      "contextWindow": {
+        "totalTokens": 16000,
+        "blocks": [
+          {
+            "id": "w10-system",
+            "category": "system_prompt",
+            "tokenCount": 750,
+            "used": true,
+            "source": "system prompt",
+            "contentPreview": "Return concise root cause and minimal fix."
+          },
+          {
+            "id": "w10-tools-unused-c",
+            "category": "tool_description",
+            "tokenCount": 2900,
+            "used": false,
+            "source": "unused tool catalog C",
+            "contentPreview": "Descriptions for report generation, file upload, browser audit, visual comparison."
+          },
+          {
+            "id": "w10-tools-unused-d",
+            "category": "tool_description",
+            "tokenCount": 1700,
+            "used": false,
+            "source": "unused tool catalog D",
+            "contentPreview": "Descriptions for package inspection, dependency graphing, markdown export, link checking."
+          },
+          {
+            "id": "w10-history",
+            "category": "conversation_history",
+            "tokenCount": 4600,
+            "used": true,
+            "source": "recent conversation",
+            "contentPreview": "Recent messages about duplicate snippets and retrieval debugging."
+          },
+          {
+            "id": "w10-retriever-source",
+            "category": "retrieved_context",
+            "tokenCount": 2600,
+            "used": true,
+            "source": "src/agents/search/retriever.ts",
+            "contentPreview": "mergeRankedResults concatenates hits; expandChunks runs before dedupe."
+          },
+          {
+            "id": "w10-retrieved-duplicate",
+            "category": "retrieved_context",
+            "tokenCount": 1600,
+            "used": false,
+            "duplicated": true,
+            "source": "docs/retrieval.md#chunk-13",
+            "contentPreview": "Adjacent paragraph overlap repeats the same warning."
+          },
+          {
+            "id": "w10-user",
+            "category": "user_input",
+            "tokenCount": 500,
+            "used": true,
+            "source": "user request",
+            "contentPreview": "Explain why the search agent returns duplicate snippets."
+          },
+          {
+            "id": "w10-scratch",
+            "category": "agent_scratchpad",
+            "tokenCount": 800,
+            "used": true,
+            "source": "analysis scratchpad",
+            "contentPreview": "Check order of merge, expand, dedupe; compare source and normalized text."
+          },
+          {
+            "id": "w10-model-output",
+            "category": "model_output",
+            "tokenCount": 350,
+            "used": true,
+            "source": "w7-assemble-context",
+            "contentPreview": "Preliminary finding: dedupe is too early in the pipeline."
+          },
+          {
+            "id": "w10-unknown",
+            "category": "unknown",
+            "tokenCount": 200,
+            "used": false,
+            "source": "collector metadata",
+            "contentPreview": "Adapter timestamp and local run id."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "0.1",
+  "traceId": "demo-error-cascade-001",
+  "title": "Error Cascade",
+  "task": "Run the focused timeline tests after a refactor and diagnose why the command fails.",
+  "source": "noematrace",
+  "startedAt": "2026-06-25T11:20:00.000Z",
+  "endedAt": "2026-06-25T11:20:20.900Z",
+  "metadata": {
+    "failureMode": "A missing test setup file caused several command variations to fail in sequence.",
+    "rootCause": "vitest.setup.ts was renamed but the config still referenced the old path."
+  },
+  "steps": [
+    {
+      "id": "e1-user-request",
+      "order": 1,
+      "type": "user_input",
+      "title": "User asks to verify timeline refactor",
+      "status": "success",
+      "latencyMs": 0,
+      "input": "Please run the focused TimelineView tests after the refactor and fix anything obvious.",
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "e2-system-context",
+      "parentId": "e1-user-request",
+      "order": 2,
+      "type": "system_prompt",
+      "title": "Load test execution policy",
+      "status": "success",
+      "latencyMs": 100,
+      "input": "Run focused tests first. If commands fail repeatedly, stop and report the first root error.",
+      "output": "Policy loaded.",
+      "tokens": {
+        "input": 720,
+        "output": 80,
+        "total": 800
+      }
+    },
+    {
+      "id": "e3-plan-tests",
+      "parentId": "e2-system-context",
+      "order": 3,
+      "type": "llm_call",
+      "title": "Plan focused test command",
+      "status": "success",
+      "latencyMs": 3100,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "target": "TimelineView",
+        "project": "Vite + Vitest"
+      },
+      "output": {
+        "command": "npx vitest run tests/timeline-view.test.tsx"
+      },
+      "tokens": {
+        "input": 4600,
+        "output": 820,
+        "total": 5420
+      },
+      "costUsd": {
+        "input": 0.0115,
+        "output": 0.0082,
+        "total": 0.0197
+      }
+    },
+    {
+      "id": "e4-run-vitest",
+      "parentId": "e3-plan-tests",
+      "order": 4,
+      "type": "tool_call",
+      "title": "Run focused Vitest command",
+      "status": "success",
+      "latencyMs": 240,
+      "tool": {
+        "name": "shell",
+        "arguments": {
+          "command": "npx vitest run tests/timeline-view.test.tsx"
+        }
+      },
+      "input": {
+        "command": "npx vitest run tests/timeline-view.test.tsx"
+      },
+      "output": "Process started.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "e5-vitest-missing-setup",
+      "parentId": "e4-run-vitest",
+      "order": 5,
+      "type": "tool_result",
+      "title": "Vitest fails: setup file missing",
+      "status": "error",
+      "latencyMs": 2650,
+      "tool": {
+        "name": "shell"
+      },
+      "output": "Error: Failed to load setup file tests/vitest.setup.ts: ENOENT no such file or directory",
+      "error": {
+        "message": "Vitest setup file tests/vitest.setup.ts was not found.",
+        "code": "ENOENT",
+        "stack": "at loadSetupFiles (node_modules/vitest/dist/chunks/runner.js:88:11)"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 1200,
+        "total": 1200
+      }
+    },
+    {
+      "id": "e6-retry-run-all",
+      "parentId": "e5-vitest-missing-setup",
+      "order": 6,
+      "type": "tool_call",
+      "title": "Retry by running all tests",
+      "status": "error",
+      "latencyMs": 490,
+      "tool": {
+        "name": "shell",
+        "arguments": {
+          "command": "npx vitest run"
+        }
+      },
+      "input": {
+        "command": "npx vitest run"
+      },
+      "output": "Command reused the same broken Vitest config and failed before collecting tests.",
+      "error": {
+        "message": "Retry failed before test collection because setup file is still missing.",
+        "code": "SETUP_FILE_NOT_FOUND"
+      },
+      "tokens": {
+        "input": 120,
+        "output": 40,
+        "total": 160
+      }
+    },
+    {
+      "id": "e7-run-build",
+      "parentId": "e6-retry-run-all",
+      "order": 7,
+      "type": "tool_call",
+      "title": "Retry with production build",
+      "status": "error",
+      "latencyMs": 4200,
+      "tool": {
+        "name": "shell",
+        "arguments": {
+          "command": "npm run build"
+        }
+      },
+      "input": {
+        "command": "npm run build"
+      },
+      "output": "tsc failed because test-only import path was still referenced by vitest.config.ts.",
+      "error": {
+        "message": "Cannot find module tests/vitest.setup.ts imported from vitest.config.ts",
+        "code": "TS2307"
+      },
+      "tokens": {
+        "input": 120,
+        "output": 30,
+        "total": 150
+      }
+    },
+    {
+      "id": "e8-cascade-marker",
+      "parentId": "e7-run-build",
+      "order": 8,
+      "type": "error",
+      "title": "Dependent verification blocked",
+      "status": "error",
+      "latencyMs": 300,
+      "error": {
+        "message": "Browser verification was skipped because test and build commands failed from the same missing setup file.",
+        "code": "VERIFICATION_BLOCKED"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 900,
+        "total": 900
+      }
+    },
+    {
+      "id": "e9-diagnose-root-cause",
+      "parentId": "e8-cascade-marker",
+      "order": 9,
+      "type": "llm_call",
+      "title": "Diagnose first failure instead of retrying",
+      "status": "warning",
+      "latencyMs": 4400,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "failures": [
+          "missing setup file",
+          "all tests fail before collection",
+          "build sees stale setup import"
+        ]
+      },
+      "output": {
+        "rootCause": "vitest.config.ts references tests/vitest.setup.ts, but the file was renamed to tests/setup.ts."
+      },
+      "tokens": {
+        "input": 5200,
+        "output": 900,
+        "total": 6100
+      },
+      "costUsd": {
+        "input": 0.013,
+        "output": 0.009,
+        "total": 0.022
+      }
+    },
+    {
+      "id": "e10-read-config",
+      "parentId": "e9-diagnose-root-cause",
+      "order": 10,
+      "type": "tool_call",
+      "title": "Read Vitest config",
+      "status": "success",
+      "latencyMs": 260,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "vitest.config.ts"
+        }
+      },
+      "input": {
+        "path": "vitest.config.ts"
+      },
+      "output": "setupFiles points at tests/vitest.setup.ts.",
+      "tokens": {
+        "input": 80,
+        "output": 60,
+        "total": 140
+      }
+    },
+    {
+      "id": "e11-config-snapshot",
+      "parentId": "e10-read-config",
+      "order": 11,
+      "type": "tool_result",
+      "title": "Config confirms stale setup path",
+      "status": "success",
+      "latencyMs": 180,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "vitest.config.ts",
+        "excerpt": "test: { setupFiles: ['tests/vitest.setup.ts'] }"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 1400,
+        "total": 1400
+      }
+    },
+    {
+      "id": "e12-recovery-plan",
+      "parentId": "e11-config-snapshot",
+      "order": 12,
+      "type": "llm_call",
+      "title": "Prepare recovery plan",
+      "status": "success",
+      "latencyMs": 3620,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "configExcerpt": "setupFiles: ['tests/vitest.setup.ts']",
+        "actualFile": "tests/setup.ts"
+      },
+      "output": {
+        "patch": "Change setupFiles to tests/setup.ts and rerun the focused test."
+      },
+      "tokens": {
+        "input": 4200,
+        "output": 600,
+        "total": 4800
+      },
+      "costUsd": {
+        "input": 0.0105,
+        "output": 0.006,
+        "total": 0.0165
+      }
+    },
+    {
+      "id": "e13-final-summary",
+      "parentId": "e12-recovery-plan",
+      "order": 13,
+      "type": "final_answer",
+      "title": "Report error cascade and root cause",
+      "status": "warning",
+      "latencyMs": 1360,
+      "model": "gpt-4o-2024-08-06",
+      "output": "The focused test did not run because Vitest config pointed to a missing setup file. Multiple retries cascaded from that first config error.",
+      "tokens": {
+        "input": 3200,
+        "output": 800,
+        "total": 4000
+      },
+      "costUsd": {
+        "input": 0.008,
+        "output": 0.008,
+        "total": 0.016
+      }
+    }
+  ]
+}

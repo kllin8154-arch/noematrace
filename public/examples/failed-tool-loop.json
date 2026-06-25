@@ -1,0 +1,355 @@
+{
+  "schemaVersion": "0.1",
+  "traceId": "demo-failed-loop-001",
+  "title": "Failed Tool Loop",
+  "task": "Find why DateRangePicker closes immediately after selecting the start date.",
+  "source": "noematrace",
+  "startedAt": "2026-06-25T10:15:00.000Z",
+  "endedAt": "2026-06-25T10:15:30.800Z",
+  "metadata": {
+    "framework": "React + Vite",
+    "failureMode": "Agent kept rereading the same file instead of inspecting event propagation or tests."
+  },
+  "steps": [
+    {
+      "id": "l1-user-request",
+      "order": 1,
+      "type": "user_input",
+      "title": "User reports date picker closes too early",
+      "status": "success",
+      "latencyMs": 0,
+      "input": "DateRangePicker closes after the start date. It should stay open until the end date is selected.",
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "l2-system-context",
+      "parentId": "l1-user-request",
+      "order": 2,
+      "type": "system_prompt",
+      "title": "Load debugging constraints",
+      "status": "success",
+      "latencyMs": 130,
+      "input": "Debug with existing tests first. Avoid broad refactors. Prefer inspecting event handling and state transitions.",
+      "output": "Constraints loaded.",
+      "tokens": {
+        "input": 820,
+        "output": 80,
+        "total": 900
+      }
+    },
+    {
+      "id": "l3-initial-plan",
+      "parentId": "l2-system-context",
+      "order": 3,
+      "type": "llm_call",
+      "title": "Plan date picker investigation",
+      "status": "success",
+      "latencyMs": 4200,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "task": "Investigate DateRangePicker premature close",
+        "filesLikelyRelevant": [
+          "src/components/DateRangePicker.tsx"
+        ]
+      },
+      "output": {
+        "nextAction": "Read DateRangePicker.tsx and locate close-on-select behavior."
+      },
+      "tokens": {
+        "input": 5200,
+        "output": 820,
+        "total": 6020
+      },
+      "costUsd": {
+        "input": 0.013,
+        "output": 0.0082,
+        "total": 0.0212
+      }
+    },
+    {
+      "id": "l4-read-picker-1",
+      "parentId": "l3-initial-plan",
+      "order": 4,
+      "type": "tool_call",
+      "title": "Read DateRangePicker source (1)",
+      "status": "success",
+      "latencyMs": 400,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/components/DateRangePicker.tsx"
+        }
+      },
+      "input": {
+        "path": "src/components/DateRangePicker.tsx"
+      },
+      "output": "Read completed for DateRangePicker.tsx, pass 1.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "l5-picker-source-1",
+      "parentId": "l4-read-picker-1",
+      "order": 5,
+      "type": "tool_result",
+      "title": "DateRangePicker source snapshot (1)",
+      "status": "success",
+      "latencyMs": 230,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/components/DateRangePicker.tsx",
+        "excerpt": "onSelect(date) sets draftRange.start and immediately calls setOpen(false) when range.end is undefined.",
+        "lines": "42-118"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 2800,
+        "total": 2800
+      }
+    },
+    {
+      "id": "l6-read-picker-2",
+      "parentId": "l5-picker-source-1",
+      "order": 6,
+      "type": "tool_call",
+      "title": "Read DateRangePicker source (2)",
+      "status": "success",
+      "latencyMs": 440,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/components/DateRangePicker.tsx"
+        }
+      },
+      "input": {
+        "path": "src/components/DateRangePicker.tsx"
+      },
+      "output": "Read completed for DateRangePicker.tsx, pass 2.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "l7-picker-source-2",
+      "parentId": "l6-read-picker-2",
+      "order": 7,
+      "type": "tool_result",
+      "title": "DateRangePicker source snapshot (2)",
+      "status": "success",
+      "latencyMs": 250,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/components/DateRangePicker.tsx",
+        "excerpt": "onSelect(date) sets draftRange.start and immediately calls setOpen(false) when range.end is undefined.",
+        "lines": "42-118"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 2800,
+        "total": 2800
+      }
+    },
+    {
+      "id": "l8-read-picker-3",
+      "parentId": "l7-picker-source-2",
+      "order": 8,
+      "type": "tool_call",
+      "title": "Read DateRangePicker source (3)",
+      "status": "success",
+      "latencyMs": 480,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/components/DateRangePicker.tsx"
+        }
+      },
+      "input": {
+        "path": "src/components/DateRangePicker.tsx"
+      },
+      "output": "Read completed for DateRangePicker.tsx, pass 3.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "l9-picker-source-3",
+      "parentId": "l8-read-picker-3",
+      "order": 9,
+      "type": "tool_result",
+      "title": "DateRangePicker source snapshot (3)",
+      "status": "success",
+      "latencyMs": 270,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/components/DateRangePicker.tsx",
+        "excerpt": "onSelect(date) sets draftRange.start and immediately calls setOpen(false) when range.end is undefined.",
+        "lines": "42-118"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 2800,
+        "total": 2800
+      }
+    },
+    {
+      "id": "l10-read-picker-4",
+      "parentId": "l9-picker-source-3",
+      "order": 10,
+      "type": "tool_call",
+      "title": "Read DateRangePicker source (4)",
+      "status": "warning",
+      "latencyMs": 520,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/components/DateRangePicker.tsx"
+        }
+      },
+      "input": {
+        "path": "src/components/DateRangePicker.tsx"
+      },
+      "output": "Read completed for DateRangePicker.tsx, pass 4.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "l11-picker-source-4",
+      "parentId": "l10-read-picker-4",
+      "order": 11,
+      "type": "tool_result",
+      "title": "DateRangePicker source snapshot (4)",
+      "status": "warning",
+      "latencyMs": 290,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/components/DateRangePicker.tsx",
+        "excerpt": "onSelect(date) sets draftRange.start and immediately calls setOpen(false) when range.end is undefined.",
+        "lines": "42-118"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 2800,
+        "total": 2800
+      }
+    },
+    {
+      "id": "l12-read-picker-5",
+      "parentId": "l11-picker-source-4",
+      "order": 12,
+      "type": "tool_call",
+      "title": "Read DateRangePicker source (5)",
+      "status": "warning",
+      "latencyMs": 560,
+      "tool": {
+        "name": "read_file",
+        "arguments": {
+          "path": "src/components/DateRangePicker.tsx"
+        }
+      },
+      "input": {
+        "path": "src/components/DateRangePicker.tsx"
+      },
+      "output": "Read completed for DateRangePicker.tsx, pass 5.",
+      "tokens": {
+        "input": 80,
+        "output": 40,
+        "total": 120
+      }
+    },
+    {
+      "id": "l13-picker-source-5",
+      "parentId": "l12-read-picker-5",
+      "order": 13,
+      "type": "tool_result",
+      "title": "DateRangePicker source snapshot (5)",
+      "status": "warning",
+      "latencyMs": 310,
+      "tool": {
+        "name": "read_file"
+      },
+      "output": {
+        "path": "src/components/DateRangePicker.tsx",
+        "excerpt": "onSelect(date) sets draftRange.start and immediately calls setOpen(false) when range.end is undefined.",
+        "lines": "42-118"
+      },
+      "tokens": {
+        "input": 0,
+        "output": 2800,
+        "total": 2800
+      }
+    },
+    {
+      "id": "l14-loop-reflection",
+      "parentId": "l13-picker-source-5",
+      "order": 14,
+      "type": "llm_call",
+      "title": "Large repeated-context reasoning pass",
+      "status": "warning",
+      "latencyMs": 7200,
+      "model": "gpt-4o-2024-08-06",
+      "input": {
+        "repeatedContext": "Five near-identical DateRangePicker source snapshots were included before reasoning.",
+        "issue": "The agent reread the same file instead of checking CalendarPopover or tests."
+      },
+      "output": {
+        "conclusion": "Likely close handler should wait for both start and end dates, but no tests were inspected."
+      },
+      "tokens": {
+        "input": 17000,
+        "output": 1400,
+        "total": 18400
+      },
+      "costUsd": {
+        "input": 0.0425,
+        "output": 0.014,
+        "total": 0.0565
+      },
+      "metadata": {
+        "warning": "This step is intentionally expensive because it carries duplicated source snapshots."
+      }
+    },
+    {
+      "id": "l15-abort-summary",
+      "parentId": "l14-loop-reflection",
+      "order": 15,
+      "type": "final_answer",
+      "title": "Abort with inconclusive summary",
+      "status": "warning",
+      "latencyMs": 3840,
+      "model": "gpt-4o-2024-08-06",
+      "output": "The run did not produce a patch. It repeatedly reread DateRangePicker.tsx and ended with an unverified hypothesis.",
+      "tokens": {
+        "input": 5600,
+        "output": 900,
+        "total": 6500
+      },
+      "costUsd": {
+        "input": 0.014,
+        "output": 0.009,
+        "total": 0.023
+      }
+    }
+  ]
+}
