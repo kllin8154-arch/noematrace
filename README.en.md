@@ -1,34 +1,58 @@
 # NoemaTrace
 
-**AI Agent Trace Replayer & Context Budget Analyzer**
+[中文](README.md) · [Live Demo](https://noematrace.vercel.app) · [GitHub](https://github.com/kllin8154-arch/noematrace)
 
-[中文 README](README.md) · [GitHub Repository](https://github.com/kllin8154-arch/noematrace)
+The only agent trace viewer that scores how much of your context window is wasted.
 
-NoemaTrace is an offline-first frontend tool for inspecting a single AI agent run. Drop in a trace JSON file and it visualizes the execution graph, timeline, failures, token usage, cost, and context-window budget.
+NoemaTrace is a zero-setup, browser-only, offline-first trace viewer for AI agent runs. Drop in a trace JSON file, then inspect the agent's decision path, tool calls, failures, token usage, context budget, and Context Waste Score in one local UI.
 
-No backend. No database. No account. No LLM API calls. It is a local debugging workbench for understanding why an agent behaved the way it did.
+**Live demo:** [https://noematrace.vercel.app](https://noematrace.vercel.app)
 
-![NoemaTrace UI screenshot](docs/noematrace-screenshot1.png)
+![NoemaTrace UI overview](docs/img.png)
 
-> Current version: v0.1, actively evolving.
+## Screenshots
 
-## What Problem Does It Solve?
+| | |
+| --- | --- |
+| ![NoemaTrace screenshot 1](docs/img.png) | ![NoemaTrace screenshot 2](docs/img_1.png) |
+| ![NoemaTrace screenshot 3](docs/img_2.png) | ![NoemaTrace screenshot 4](docs/img_3.png) |
+| ![NoemaTrace screenshot 5](docs/img_4.png) | ![NoemaTrace screenshot 6](docs/img_5.png) |
+| ![NoemaTrace screenshot 7](docs/img_6.png) | |
 
-An agent run is rarely a single response. It is a sequence of user input, prompts, model calls, tool calls, retries, failures, retrieved context, and final output.
+## What It Solves
 
-Raw logs make that hard to reason about. NoemaTrace turns one run into an interactive view so you can answer:
+An agent run is rarely a single response. It can include user input, system prompts, model calls, tool calls, retrieved context, retries, errors, and a final answer.
 
-1. Why did the agent produce this result?
-2. Should the next fix be in the prompt, tools, retrieval, retry logic, or execution policy?
+Raw logs are hard to reason about. NoemaTrace turns one trace JSON into an interactive inspection view so you can answer:
 
-## When Would You Use It?
+1. What did the agent do at each step?
+2. Why did it fail, loop, or repeat a tool call?
+3. Which step consumed the most tokens, time, or cost?
+4. Which parts of the context window were actually useful, and which were waste?
+5. Should the next fix be in the prompt, tools, retrieval, retry logic, or execution policy?
+
+## Where It Helps
 
 - Debug a coding agent that repeatedly reads the same file.
-- Spot repeated tool calls with identical arguments.
-- Explain an error cascade after the first failed command.
-- Understand why the context window is full but not useful.
-- Identify high-token or high-cost steps.
-- Teach or document how agent traces work.
+- Review an error cascade after the first failed command.
+- Find high-token, high-cost, or high-latency steps.
+- Inspect unused, duplicated, or oversized blocks in a RAG / agent context window.
+- Teach or document how agent traces, context budgets, and failure analysis work.
+- Inspect one agent run without running a backend, uploading data, or changing application code.
+
+## Why NoemaTrace
+
+Most agent debugging tools ask you to run infrastructure, install a collector, wire in an SDK, use a database, or work from a CLI. NoemaTrace makes a narrower tradeoff: it reads one trace file and helps you understand one run quickly.
+
+| Difference | What it means |
+| --- | --- |
+| Pure frontend, zero backend | No server, no database, no account system, no API key. Open the app and drag in JSON. |
+| Context Waste Score | Other tools focus on replay or diff. NoemaTrace also quantifies wasted context from unused blocks, duplicated content, heavy tool descriptions, long history, and high-token steps. |
+| No SDK intrusion | NoemaTrace only reads trace files. You do not need to change your agent code, install a runtime SDK, or send data to a hosted platform. |
+
+## How It Differs
+
+Tools like Langfuse and LangSmith are production platforms; local debuggers like agenttrace and agent-replay require a backend or CLI setup. NoemaTrace trades persistence and live capture for zero-setup inspection: drag a JSON, read it, done.
 
 ## Quick Start
 
@@ -39,7 +63,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`, choose a built-in demo trace, or drag in your own trace JSON.
+Open `http://localhost:5173`, choose one of the built-in demo traces, or drag in your own NoemaTrace `schemaVersion: "0.1"` JSON file.
 
 Useful checks:
 
@@ -49,27 +73,38 @@ npx vitest run
 npm run build
 ```
 
+The production build outputs to `dist`.
+
+## Core Views
+
+### Graph
+
+See the agent run as an execution tree. Parent-child relationships are derived from `parentId`, then laid out automatically so you can follow planning, tool calls, tool results, retries, and final answers.
+
+### Timeline
+
+Read the run in execution order. Each step is colored by type and sized by latency, making slow model calls, repeated tools, and wasted retry loops easier to spot.
+
+### Failures
+
+Review rule-based findings for repeated tool calls, high-cost nodes, error cascades, unused context, and experimental risky tool calls. Findings link back to affected steps.
+
+### Budget
+
+Break down annotated `contextWindow` blocks by category: system prompt, tool descriptions, conversation history, retrieved context, user input, model output, scratchpad, and unknown.
+
+### Waste Score
+
+Context Waste Score turns context engineering problems into a single inspection signal. Higher scores mean more waste from unused context, duplicated blocks, heavy tool descriptions, large conversation history, or high-token steps.
+
 ## Built-In Demos
 
-| Demo | Scenario | Demonstrates |
+| Demo | Scenario | What to inspect |
 | --- | --- | --- |
-| successful-coding-agent | Agent fixes a transparent dropdown in `src/components/Dropdown.tsx` | Graph, timeline, detail panel, context budget |
-| failed-tool-loop | Agent reads `DateRangePicker.tsx` 5 times with identical arguments | Repeated tool call, high-cost node |
-| error-cascade | A missing test setup file causes dependent commands to fail | Error cascade |
-| context-waste-run | Tool descriptions and overlapping retrieved chunks dominate context | Unused context, context budget recommendations |
-
-## Features
-
-- **Graph**: view the parent-child execution tree.
-- **Timeline**: inspect step order and latency.
-- **Failure Analysis**: rule-based findings for repeated tool calls, high-cost nodes, error cascades, unused context, and risky tool calls.
-- **Context Budget**: break down context-window tokens by category.
-- **Report**: copy or download a Markdown report.
-- **Bilingual UI**: Chinese and English switching for the UI, findings, recommendations, demos, and reports.
-
-## Tech Stack
-
-React · Vite · TypeScript · Tailwind CSS · Zustand · Zod · `@xyflow/react` · elkjs · Recharts · highlight.js · Vitest
+| `successful-coding-agent.json` | A coding agent fixes a transparent dropdown in a React component. | Graph, Timeline, details, report export, balanced context budget. |
+| `failed-tool-loop.json` | The agent repeatedly reads the same file with identical arguments. | Repeated Tool Call and High Cost Node findings. |
+| `error-cascade.json` | A failed command triggers several follow-up failures. | Error Cascade finding and wasted retry time. |
+| `context-waste-run.json` | Tool descriptions and overlapping retrieval chunks inflate the context window. | Unused Context, Context Budget recommendations, and Context Waste Score. |
 
 ## Trace Format
 
@@ -82,21 +117,25 @@ Key concepts:
 - `parentId`: tree relationship.
 - `order`: execution order.
 - `contextWindow`: context-budget data on `llm_call` steps.
-- `Finding`: analyzer output.
+- `Finding`: analyzer output with a recommendation.
 
 The authoritative schema lives in `src/types/schema.ts`.
 
-## What It Is Not
+## Not a Platform
 
-NoemaTrace is not:
+NoemaTrace is intentionally not a production observability platform.
 
-- a LangSmith / Langfuse replacement
-- a production monitoring system
-- a backend observability platform
-- a trace collection SDK
-- an LLM-powered auto-debugger
+It does not provide:
 
-It is a local-first tool for replaying and understanding one agent run at a time.
+- backend services
+- user accounts
+- databases or persistence
+- live monitoring
+- hosted trace ingestion
+- trace collection SDKs
+- LLM API calls
+
+It is a local inspection tool for individual agent runs. If you need production tracing, dashboards, alerts, retention, or team workflows, use a platform built for that. If you have one trace JSON and want to understand what happened, use NoemaTrace.
 
 ## License
 
